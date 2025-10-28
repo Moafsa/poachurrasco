@@ -36,20 +36,6 @@ COPY . /var/www
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
 
-# Debug: Check files and environment
-RUN echo "=== DEBUG INFO ===" && ls -la /var/www/
-RUN echo "Composer version:" && composer --version
-RUN echo "PHP version:" && php --version
-RUN echo "Composer.json exists:" && test -f /var/www/composer.json && echo "YES" || echo "NO"
-
-# Install dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader --verbose
-RUN npm install --production
-RUN npm run build
-
-# Set final permissions
-RUN chown -R www-data:www-data /var/www
-
 # Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
 set -e\n\
@@ -62,6 +48,18 @@ while ! nc -z db 5432; do\n\
   sleep 1\n\
 done\n\
 echo "Database is ready!"\n\
+\n\
+# Install dependencies if vendor directory is empty\n\
+if [ ! -d "/var/www/vendor" ] || [ -z "$(ls -A /var/www/vendor)" ]; then\n\
+  echo "=== INSTALLING DEPENDENCIES ==="\n\
+  cd /var/www\n\
+  composer install --no-interaction --no-dev --optimize-autoloader\n\
+  npm install --production\n\
+  npm run build\n\
+  echo "Dependencies installed successfully!"\n\
+else\n\
+  echo "Dependencies already installed - skipping"\n\
+fi\n\
 \n\
 # Check if this is the first run\n\
 if ! php artisan migrate:status > /dev/null 2>&1; then\n\
