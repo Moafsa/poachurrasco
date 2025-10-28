@@ -32,23 +32,25 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application code
 COPY . /var/www
 
-# Change ownership first
+# Set proper permissions
 RUN chown -R www-data:www-data /var/www
+RUN chmod -R 755 /var/www
 
-# Switch to www-data user for installations
-USER www-data
+# Debug: Check composer and files
+RUN echo "=== DEBUG INFO ===" && \
+    ls -la /var/www/ && \
+    echo "Composer version:" && composer --version && \
+    echo "PHP version:" && php --version && \
+    echo "Composer.json exists:" && test -f composer.json && echo "YES" || echo "NO" && \
+    echo "Composer.lock exists:" && test -f composer.lock && echo "YES" || echo "NO"
 
-# Install PHP dependencies as www-data
-RUN composer install --no-interaction
-
-# Install Node dependencies as www-data
-RUN npm install
-
-# Build assets as www-data
+# Install dependencies as root (more reliable)
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts --prefer-dist --verbose
+RUN npm install --production --no-audit --no-fund
 RUN npm run build
 
-# Switch back to root
-USER root
+# Set final permissions
+RUN chown -R www-data:www-data /var/www
 
 # Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
