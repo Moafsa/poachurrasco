@@ -43,7 +43,7 @@ RUN echo "PHP version:" && php --version
 RUN echo "Composer.json exists:" && test -f /var/www/composer.json && echo "YES" || echo "NO"
 
 # Install dependencies
-RUN composer update --no-interaction --no-dev --optimize-autoloader --verbose
+RUN composer install --no-interaction --no-dev --optimize-autoloader --verbose
 RUN npm install --production
 RUN npm run build
 
