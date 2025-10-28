@@ -36,8 +36,15 @@ COPY . /var/www
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
 
+# Debug: Check files and environment
+RUN echo "=== DEBUG INFO ===" && \
+    ls -la /var/www/ && \
+    echo "Composer version:" && composer --version && \
+    echo "PHP version:" && php --version && \
+    echo "Composer.json content:" && head -20 /var/www/composer.json
+
 # Install dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+RUN composer update --no-interaction --no-dev --optimize-autoloader --verbose
 RUN npm install --production
 RUN npm run build
 
