@@ -37,11 +37,10 @@ RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
 
 # Debug: Check files and environment
-RUN echo "=== DEBUG INFO ===" && \
-    ls -la /var/www/ && \
-    echo "Composer version:" && composer --version && \
-    echo "PHP version:" && php --version && \
-    echo "Composer.json content:" && head -20 /var/www/composer.json
+RUN echo "=== DEBUG INFO ===" && ls -la /var/www/
+RUN echo "Composer version:" && composer --version
+RUN echo "PHP version:" && php --version
+RUN echo "Composer.json exists:" && test -f /var/www/composer.json && echo "YES" || echo "NO"
 
 # Install dependencies
 RUN composer update --no-interaction --no-dev --optimize-autoloader --verbose
