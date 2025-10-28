@@ -1,5 +1,4 @@
-# Multi-stage build for Laravel application
-FROM php:8.2-fpm as base
+FROM php:8.2-fpm
 
 # Set working directory
 WORKDIR /var/www
@@ -30,27 +29,20 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy composer files first for better caching
-COPY composer.json ./
-
-# Install PHP dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
-
-# Copy package files
-COPY package.json ./
-
-# Install Node dependencies
-RUN npm install --only=production
-
-# Copy application code
-COPY . .
-
-# Build assets
-RUN npm run build
+# Copy all application code
+COPY . /var/www
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
+
+# Install dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+RUN npm install --production
+RUN npm run build
+
+# Set final permissions
+RUN chown -R www-data:www-data /var/www
 
 # Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
