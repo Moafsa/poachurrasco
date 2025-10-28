@@ -1,4 +1,5 @@
-FROM php:8.2-fpm
+# Multi-stage build for Laravel application
+FROM php:8.2-fpm as base
 
 # Set working directory
 WORKDIR /var/www
@@ -29,28 +30,27 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install Node dependencies
+RUN npm ci --only=production
+
 # Copy application code
-COPY . /var/www
+COPY . .
+
+# Build assets
+RUN npm run build
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
-
-# Debug: Check composer and files
-RUN echo "=== DEBUG INFO ===" && \
-    ls -la /var/www/ && \
-    echo "Composer version:" && composer --version && \
-    echo "PHP version:" && php --version && \
-    echo "Composer.json exists:" && test -f composer.json && echo "YES" || echo "NO" && \
-    echo "Composer.lock exists:" && test -f composer.lock && echo "YES" || echo "NO"
-
-# Install dependencies as root (more reliable)
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts --prefer-dist --verbose
-RUN npm install --production --no-audit --no-fund
-RUN npm run build
-
-# Set final permissions
-RUN chown -R www-data:www-data /var/www
 
 # Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
@@ -118,9 +118,6 @@ echo "Starting PHP-FPM..."\n\
 exec php-fpm' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Install netcat and cron for database connectivity check and scheduled tasks
-RUN apt-get update && apt-get install -y netcat-traditional cron && rm -rf /var/lib/apt/lists/*
 
 # Copy cron job file
 COPY docker/cron/reviews-sync /etc/cron.d/reviews-sync
