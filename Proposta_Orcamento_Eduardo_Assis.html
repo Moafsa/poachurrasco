@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta de Solução Digital - Portal Porto Alegre, a Capital Mundial do Churrasco</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1a1a1a;
+        }
+        .gradient-bg {
+            background: linear-gradient(145deg, #1a1a1a 0%, #2c1d17 50%, #42251a 100%);
+        }
+        .card-bg {
+            background-color: rgba(12, 12, 12, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .accent-text {
+            color: #F97316; /* orange-500 */
+        }
+        .accent-border {
+            border-color: #F97316;
+        }
+        .accent-bg {
+            background-color: #F97316;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #1a1a1a;
+            border: 2px solid #F97316;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timeline-dot-inner {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #F97316;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .gradient-bg {
+                background: none !important;
+            }
+            .card-bg {
+                background-color: #f3f4f6 !important; /* gray-100 */
+                border: 1px solid #e5e7eb; /* gray-200 */
+                box-shadow: none !important;
+                break-inside: avoid;
+            }
+            .text-white, .text-gray-200, .text-gray-300, .text-gray-400, .text-gray-500 {
+                color: #1f2937 !important; /* gray-800 */
+            }
+            .accent-text {
+                color: #F97316 !important;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                break-after: avoid;
+            }
+            section {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg text-gray-200">
+
+    <div class="container mx-auto p-4 sm:p-8">
+
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-16 no-print">
+            <div class="flex items-center space-x-3">
+                <img src="https://www.conext.click/img/logo.svg" alt="[Logo da Conext]" class="h-10">
+            </div>
+            <div class="text-right mt-4 sm:mt-0">
+                <p class="text-sm text-gray-400">Proposta preparada para:</p>
+                <p class="text-lg font-semibold text-white">Projeto "Capital Mundial do Churrasco"</p>
+                <p class="text-sm italic text-orange-400 mt-1">Proposta válida por 30 dias. Após este período, os valores e prazos poderão ser revistos.</p>
+            </div>
+        </header>
+
+        <!-- Main Title -->
+        <section class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                Vamos construir o futuro do turismo em <span class="accent-text">Porto Alegre</span>.
+            </h1>
+            <p class="max-w-3xl mx-auto mt-6 text-lg text-gray-300">
+                Uma plataforma digital para conectar a cultura do churrasco a um público global, gerando negócios, visibilidade e uma experiência inesquecível para visitantes e moradores.
+            </p>
+        </section>
+
+        <!-- Options Comparison -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+            
+            <!-- Option 1: Essencial -->
+            <div class="card-bg p-8 rounded-2xl shadow-2xl border border-gray-700/50 flex flex-col transform hover:scale-[1.02] transition-transform duration-300">
+                <h3 class="text-2xl font-bold text-white mb-2">🚀 Projeto Presença Digital Essencial</h3>
+                <p class="text-gray-400 mb-6 flex-grow">A fundação para posicionar o projeto online com credibilidade e profissionalismo, atraindo os primeiros parceiros e validando o conceito.</p>
+                
+                <div class="bg-black/30 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-lg font-semibold text-white">Investimento:</p>
+                    <p><strong class="accent-text text-xl">Desenvolvimento (Pagamento Único):</strong> R$ 2.500</p>
+                    <p><strong class="accent-text text-xl">Manutenção e Hospedagem (Mensal):</strong> R$ 450</p>
+                </div>
+
+                <div class="space-y-4">
+                    <h4 class="text-xl font-semibold text-white mb-3">Principais Entregáveis:</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Vitrine Institucional:</strong> Um site de até 3 páginas com design moderno, apresentando a visão do projeto.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Mural de Parceiros:</strong> Uma área de destaque para exibir os logos dos primeiros apoiadores, gerando prova social.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Dashboard Simplificado:</strong> Uma área para parceiros se cadastrarem e gerenciarem suas informações básicas.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Integração Asaas:</strong> Preparação para recebimentos via Pix e Boleto.</span></li>
+                    </ul>
+                    <p class="text-sm italic text-gray-500 pt-4">Nota: O valor mensal é projetado para um volume de tráfego padrão. Em caso de crescimento exponencial de acessos, o valor poderá ser reajustado.</p>
+                </div>
+            </div>
+
+            <!-- Option 2: Premium -->
+            <div class="card-bg p-8 rounded-2xl shadow-2xl border accent-border flex flex-col transform hover:scale-[1.02] transition-transform duration-300 relative">
+                 <div class="absolute top-0 right-8 -mt-4">
+                    <span class="bg-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full uppercase tracking-wider">Recomendado</span>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">⭐ Projeto Portal Premium Interativo</h3>
+                <p class="text-gray-400 mb-6 flex-grow">Uma plataforma de negócios completa, com múltiplas fontes de receita, inteligência artificial e foco total na experiência do usuário para dominar o mercado.</p>
+                
+                <div class="bg-black/30 p-4 rounded-lg mb-6 text-center">
+                    <p class="text-lg font-semibold text-white">Investimento:</p>
+                    <p><strong class="accent-text text-xl">Desenvolvimento (Pagamento Único):</strong> R$ 6.500</p>
+                    <p class="text-sm italic text-gray-400">(50% na contratação, 50% na entrega)</p>
+                    <p><strong class="accent-text text-xl">Manutenção, Suporte e Evolução (Mensal):</strong> R$ 850</p>
+                </div>
+
+                <div class="space-y-4">
+                     <h4 class="text-xl font-semibold text-white mb-3">Funcionalidades Avançadas:</h4>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Monetização com Ads:</strong> Sistema para gerenciar banners e destaques patrocinados, gerando receita passiva.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Assistente com IA:</strong> Ferramenta que cria textos de marketing para os parceiros, economizando tempo e profissionalizando a comunicação.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Marketplace e Mapa Interativo:</strong> Permita vendas diretas na plataforma e guie os usuários com um mapa inteligente e filtros avançados.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Analytics e SEO Contínuo:</strong> Relatórios de dados para parceiros e otimização constante para garantir as primeiras posições no Google.</span></li>
+                        <li class="flex items-start"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 accent-text mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg> <span><strong class="text-white">Integração Asaas Completa:</strong> Checkout transparente, split de pagamentos e gestão de assinaturas.</span></li>
+                    </ul>
+                    <p class="text-sm italic text-gray-500 pt-4">Nota: O valor mensal é projetado para um volume de tráfego padrão. Em caso de crescimento exponencial de acessos, o valor poderá ser reajustado.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section class="card-bg p-8 rounded-2xl shadow-2xl border border-gray-700/50 mb-16">
+            <h3 class="text-3xl font-bold text-white text-center mb-12">Roadmap de Desenvolvimento</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+                <!-- Roadmap Essencial -->
+                <div>
+                    <h4 class="text-2xl font-bold text-white mb-8 text-center">🚀 Projeto Essencial</h4>
+                    <div class="relative pl-8">
+                        <div class="relative pb-10 pl-8 timeline-item">
+                            <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 1: Imersão e Design</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">1ª Semana</p>
+                            <p class="text-gray-300">Alinhamento estratégico, wireframes e aprovação do design visual.</p>
+                        </div>
+                        <div class="relative pb-10 pl-8 timeline-item">
+                           <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 2: Desenvolvimento</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">2ª e 3ª Semanas</p>
+                            <p class="text-gray-300">Codificação front-end e back-end do site e dashboard de parceiros.</p>
+                        </div>
+                        <div class="relative pl-8 timeline-item">
+                            <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 3: Lançamento</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">4ª Semana</p>
+                            <p class="text-gray-300">Testes, publicação do site (go-live) e treinamento de uso.</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-black/30 p-4 rounded-lg text-center">
+                        <p class="font-bold text-white">Prazo Estimado de Entrega: <span class="accent-text">4 Semanas</span></p>
+                        <p class="text-xs italic text-gray-500 mt-2">Este prazo poderá ser antecipado conforme o andamento e a colaboração no projeto.</p>
+                    </div>
+                </div>
+
+                <!-- Roadmap Premium -->
+                <div>
+                    <h4 class="text-2xl font-bold text-white mb-8 text-center">⭐ Projeto Premium</h4>
+                     <div class="relative pl-8">
+                        <div class="relative pb-10 pl-8 timeline-item">
+                            <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 1: Estratégia e Arquitetura</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">1ª - 2ª Semanas</p>
+                            <p class="text-gray-300">Imersão, definição de escopo e arquitetura técnica da plataforma.</p>
+                        </div>
+                         <div class="relative pb-10 pl-8 timeline-item">
+                            <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 2: Design de Experiência (UX/UI)</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">3ª - 4ª Semanas</p>
+                            <p class="text-gray-300">Criação dos wireframes, design visual e protótipo interativo.</p>
+                        </div>
+                        <div class="relative pb-10 pl-8 timeline-item">
+                           <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 3: Desenvolvimento Core e IA</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">5ª - 9ª Semanas</p>
+                            <p class="text-gray-300">Construção da base, dashboard e integração da IA de conteúdo.</p>
+                        </div>
+                        <div class="relative pb-10 pl-8 timeline-item">
+                           <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 4: Módulos Avançados</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">10ª - 12ª Semanas</p>
+                            <p class="text-gray-300">Desenvolvimento do Mapa Interativo e Marketplace.</p>
+                        </div>
+                        <div class="relative pl-8 timeline-item">
+                            <div class="timeline-dot"><div class="timeline-dot-inner"></div></div>
+                            <h5 class="text-lg font-semibold text-white">Fase 5: Lançamento e Operação</h5>
+                            <p class="text-sm font-semibold accent-text mb-2">13ª - 14ª Semanas</p>
+                            <p class="text-gray-300">Testes, ajustes finais, publicação e treinamento completo.</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-black/30 p-4 rounded-lg text-center">
+                        <p class="font-bold text-white">Prazo Estimado de Entrega: <span class="accent-text">14 Semanas</span></p>
+                        <p class="text-xs italic text-gray-500 mt-2">Este prazo poderá ser antecipado conforme o andamento e a colaboração no projeto.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA and Footer -->
+        <footer class="text-center mt-20">
+            <div class="no-print">
+                <h3 class="text-3xl font-bold text-white">Pronto para dar o próximo passo?</h3>
+                <p class="text-gray-300 mt-4 mb-8 max-w-xl mx-auto">Vamos agendar uma conversa para discutir os detalhes e formalizar nossa parceria para o lançamento deste projeto incrível.</p>
+                <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                     <a href="https://wa.me/5554997092223" target="_blank" class="w-full sm:w-auto inline-block accent-bg text-black font-bold text-lg px-10 py-4 rounded-lg shadow-lg hover:bg-orange-400 transition-colors duration-300 transform hover:scale-105">
+                        Entrar em Contato
+                    </a>
+                </div>
+            </div>
+            <div class="mt-16 pt-8 border-t border-gray-700/50 flex flex-col items-center">
+                 <img src="https://www.conext.click/img/logo.svg" alt="[Logo da Conext]" class="h-8 mb-4">
+                 <p class="text-sm text-gray-500">Conext | CNPJ: 10.654.725/0001-57 | www.conext.click</p>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>
+

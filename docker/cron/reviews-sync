@@ -1,0 +1,11 @@
+# Cron job para sincronização automática de avaliações externas
+# Este arquivo será copiado para o container e executado automaticamente
+
+# Sincronizar avaliações externas todos os dias às 2h da manhã
+0 2 * * * cd /var/www && php artisan reviews:sync-external >> /var/log/reviews-sync.log 2>&1
+
+# Limpar cache semanalmente (domingos às 3h)
+0 3 * * 0 cd /var/www && php artisan cache:clear >> /var/log/cache-clear.log 2>&1
+
+# Otimizar cache diariamente às 4h
+0 4 * * * cd /var/www && php artisan config:cache && php artisan route:cache && php artisan view:cache >> /var/log/cache-optimize.log 2>&1
