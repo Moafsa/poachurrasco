@@ -33,10 +33,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . /var/www
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-interaction --memory-limit=-1
 
 # Install Node dependencies
-RUN npm ci --only=production
+RUN npm install
 
 # Build assets
 RUN npm run build
