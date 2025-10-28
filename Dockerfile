@@ -32,17 +32,23 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application code
 COPY . /var/www
 
-# Install PHP dependencies
-RUN composer install --no-interaction --memory-limit=-1
+# Change ownership first
+RUN chown -R www-data:www-data /var/www
 
-# Install Node dependencies
+# Switch to www-data user for installations
+USER www-data
+
+# Install PHP dependencies as www-data
+RUN composer install --no-interaction
+
+# Install Node dependencies as www-data
 RUN npm install
 
-# Build assets
+# Build assets as www-data
 RUN npm run build
 
-# Change ownership
-RUN chown -R www-data:www-data /var/www
+# Switch back to root
+USER root
 
 # Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
