@@ -32,6 +32,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy all application code
 COPY . /var/www
 
+# Debug: Check what was copied
+RUN echo "=== DEBUG: Files copied to container ===" && \
+    ls -la /var/www/ && \
+    echo "=== Checking for Laravel files ===" && \
+    test -f /var/www/composer.json && echo "composer.json: YES" || echo "composer.json: NO" && \
+    test -f /var/www/package.json && echo "package.json: YES" || echo "package.json: NO" && \
+    test -d /var/www/app && echo "app/: YES" || echo "app/: NO" && \
+    test -d /var/www/config && echo "config/: YES" || echo "config/: NO"
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
