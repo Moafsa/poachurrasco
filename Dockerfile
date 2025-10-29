@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies
+# Install system dependencies including Nginx
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     netcat-traditional \
     cron \
+    nginx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -47,7 +48,30 @@ echo "<p><strong>Time:</strong> " . date("Y-m-d H:i:s") . "</p>";\n\
 echo "<p><strong>Server:</strong> " . $_SERVER["SERVER_NAME"] ?? "Unknown" . "</p>";\n\
 ?>' > /var/www/index.php
 
-# Create entrypoint script
+# Configure Nginx
+RUN echo 'server {\n\
+    listen 80;\n\
+    server_name _;\n\
+    root /var/www;\n\
+    index index.php index.html;\n\
+\n\
+    location / {\n\
+        try_files $uri $uri/ /index.php?$query_string;\n\
+    }\n\
+\n\
+    location ~ \.php$ {\n\
+        fastcgi_pass 127.0.0.1:9000;\n\
+        fastcgi_index index.php;\n\
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+    }\n\
+\n\
+    location ~ /\.ht {\n\
+        deny all;\n\
+    }\n\
+}' > /etc/nginx/sites-available/default
+
+# Create entrypoint script that starts both Nginx and PHP-FPM
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -72,12 +96,16 @@ else\n\
   echo "No Laravel files found, running simple PHP app..."\n\
 fi\n\
 \n\
-echo "=== APPLICATION READY ==="\n\
+# Start PHP-FPM in background\n\
 echo "Starting PHP-FPM..."\n\
-exec php-fpm' > /usr/local/bin/entrypoint.sh
+php-fpm &\n\
+\n\
+# Start Nginx in foreground\n\
+echo "Starting Nginx..."\n\
+nginx -g "daemon off;"' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
+# Expose port 80 for Nginx
+EXPOSE 80
 CMD ["/usr/local/bin/entrypoint.sh"]
