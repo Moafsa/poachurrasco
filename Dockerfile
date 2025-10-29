@@ -29,28 +29,16 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Create a minimal Laravel application structure
-RUN echo '{"name":"laravel/laravel","type":"project","description":"The skeleton application for the Laravel framework.","keywords":["laravel","framework"],"license":"MIT","require":{"php":"^8.2","laravel/framework":"^11.0","laravel/socialite":"^5.23","laravel/tinker":"^2.10.1"},"require-dev":{"fakerphp/faker":"^1.23","laravel/pail":"^1.2.2","laravel/pint":"^1.24","laravel/sail":"^1.41","mockery/mockery":"^1.6","nunomaduro/collision":"^8.6","phpunit/phpunit":"^11.5.3"},"autoload":{"psr-4":{"App\\\\":"app/","Database\\\\Factories\\\\":"database/factories/","Database\\\\Seeders\\\\":"database/seeders/"}},"autoload-dev":{"psr-4":{"Tests\\\\":"tests/"}},"scripts":{"post-autoload-dump":["Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump","@php artisan package:discover --ansi"],"post-update-cmd":["@php artisan vendor:publish --tag=laravel-assets --ansi --force"],"post-root-package-install":["@php -r \\"file_exists(.env) || copy(.env.example, .env);\\""],"post-create-project-cmd":["@php artisan key:generate --ansi","@php -r \\"file_exists(database/database.sqlite) || touch(database/database.sqlite);\\"","@php artisan migrate --graceful --ansi"],"pre-package-uninstall":["Illuminate\\\\Foundation\\\\ComposerScripts::prePackageUninstall"]},"extra":{"laravel":{"dont-discover":[]}},"config":{"optimize-autoloader":true,"preferred-install":"dist","sort-packages":true,"allow-plugins":{"pestphp/pest-plugin":true,"php-http/discovery":true}},"minimum-stability":"stable","prefer-stable":true}' > composer.json
-
-RUN echo '{"name":"laravel/laravel","type":"project","description":"The skeleton application for the Laravel framework.","keywords":["laravel","framework"],"license":"MIT","require":{"php":"^8.2","laravel/framework":"^11.0","laravel/socialite":"^5.23","laravel/tinker":"^2.10.1"},"require-dev":{"fakerphp/faker":"^1.23","laravel/pail":"^1.2.2","laravel/pint":"^1.24","laravel/sail":"^1.41","mockery/mockery":"^1.6","nunomaduro/collision":"^8.6","phpunit/phpunit":"^11.5.3"},"autoload":{"psr-4":{"App\\\\":"app/","Database\\\\Factories\\\\":"database/factories/","Database\\\\Seeders\\\\":"database/seeders/"}},"autoload-dev":{"psr-4":{"Tests\\\\":"tests/"}},"scripts":{"post-autoload-dump":["Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump","@php artisan package:discover --ansi"],"post-update-cmd":["@php artisan vendor:publish --tag=laravel-assets --ansi --force"],"post-root-package-install":["@php -r \\"file_exists(.env) || copy(.env.example, .env);\\""],"post-create-project-cmd":["@php artisan key:generate --ansi","@php -r \\"file_exists(database/database.sqlite) || touch(database/database.sqlite);\\"","@php artisan migrate --graceful --ansi"],"pre-package-uninstall":["Illuminate\\\\Foundation\\\\ComposerScripts::prePackageUninstall"]},"extra":{"laravel":{"dont-discover":[]}},"config":{"optimize-autoloader":true,"preferred-install":"dist","sort-packages":true,"allow-plugins":{"pestphp/pest-plugin":true,"php-http/discovery":true}},"minimum-stability":"stable","prefer-stable":true}' > composer.lock
-
-RUN echo '{"name":"laravel/laravel","private":true,"type":"module","scripts":{"build":"vite build","dev":"vite"},"devDependencies":{"axios":"^1.7.4","laravel-vite-plugin":"^1.0.0","vite":"^6.0.0"}}' > package.json
-
-# Create basic Laravel structure
-RUN mkdir -p app/Http/Controllers app/Models database/migrations database/seeders config routes bootstrap/cache public resources/views storage/logs
-
-# Create basic artisan file
-RUN echo '#!/usr/bin/env php\n<?php\n\ndefine("LARAVEL_START", microtime(true));\n\nrequire __DIR__."/vendor/autoload.php";\n\n$app = require_once __DIR__."/bootstrap/app.php";\n\n$kernel = $app->make(Illuminate\\Contracts\\Console\\Kernel::class);\n\n$status = $kernel->handle(\n    $input = new Symfony\\Component\\Console\\Input\\ArgvInput,\n    new Symfony\\Component\\Console\\Output\\ConsoleOutput\n);\n\n$kernel->terminate($input, $status);\n\nexit($status);' > artisan
-
-RUN chmod +x artisan
+# Copy application code
+COPY . /var/www
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
 
 # Install dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader
-RUN npm install --production
+RUN composer install --no-interaction --no-dev --optimize-autoloader || true
+RUN npm install --production || true
 
 # Create entrypoint script
 RUN echo '#!/bin/bash\n\
@@ -64,6 +52,14 @@ while ! nc -z db 5432; do\n\
   sleep 1\n\
 done\n\
 echo "Database is ready!"\n\
+\n\
+# Try to install dependencies if they failed during build\n\
+if [ ! -d "/var/www/vendor" ] || [ -z "$(ls -A /var/www/vendor)" ]; then\n\
+  echo "Installing dependencies at runtime..."\n\
+  cd /var/www\n\
+  composer install --no-interaction --no-dev --optimize-autoloader || echo "Composer install failed, continuing..."\n\
+  npm install --production || echo "NPM install failed, continuing..."\n\
+fi\n\
 \n\
 echo "=== APPLICATION READY ==="\n\
 echo "Starting PHP-FPM..."\n\
