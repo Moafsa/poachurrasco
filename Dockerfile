@@ -3,7 +3,7 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www
 
-# Install system dependencies including Nginx
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,12 +14,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libpq-dev \
     nodejs \
-    npm \
-    netcat-traditional \
-    cron \
-    nginx \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    npm
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd
@@ -30,72 +28,17 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application code
+# Copy existing application directory contents
 COPY . /var/www
 
-# Create a simple working PHP application
-RUN echo '<?php\n\
-header("Content-Type: text/html; charset=UTF-8");\n\
-echo "<!DOCTYPE html>";\n\
-echo "<html><head><title>POA Churrasco</title></head><body>";\n\
-echo "<h1>POA Churrasco - Sistema Funcionando!</h1>";\n\
-echo "<p><strong>Database:</strong> " . (extension_loaded("pdo_pgsql") ? "PostgreSQL OK" : "PostgreSQL ERROR") . "</p>";\n\
-echo "<p><strong>Redis:</strong> " . (extension_loaded("redis") ? "Redis OK" : "Redis ERROR") . "</p>";\n\
-echo "<p><strong>PHP Version:</strong> " . phpversion() . "</p>";\n\
-echo "<p><strong>Time:</strong> " . date("Y-m-d H:i:s") . "</p>";\n\
-echo "<p><strong>Server:</strong> " . ($_SERVER["SERVER_NAME"] ?? "Unknown") . "</p>";\n\
-echo "<p><strong>Request URI:</strong> " . ($_SERVER["REQUEST_URI"] ?? "Unknown") . "</p>";\n\
-echo "<p><strong>Document Root:</strong> " . ($_SERVER["DOCUMENT_ROOT"] ?? "Unknown") . "</p>";\n\
-echo "<p><strong>Script Filename:</strong> " . ($_SERVER["SCRIPT_FILENAME"] ?? "Unknown") . "</p>";\n\
-echo "</body></html>";\n\
-?>' > /var/www/index.php
-
-# Create simple HTML fallback
-RUN echo '<!DOCTYPE html>\n\
-<html>\n\
-<head>\n\
-    <title>POA Churrasco</title>\n\
-    <meta charset="UTF-8">\n\
-</head>\n\
-<body>\n\
-    <h1>POA Churrasco - Sistema Funcionando!</h1>\n\
-    <p>Se você está vendo esta página, o servidor web está funcionando!</p>\n\
-    <p><a href="/index.php">Clique aqui para ver a versão PHP</a></p>\n\
-</body>\n\
-</html>' > /var/www/index.html
-
-# Set proper permissions
+# Change ownership of the web directory
 RUN chown -R www-data:www-data /var/www
-RUN chmod -R 755 /var/www
 
-# Configure Nginx with simple, working config
-RUN echo 'server {\n\
-    listen 80;\n\
-    server_name _;\n\
-    root /var/www;\n\
-    index index.php index.html;\n\
-\n\
-    location / {\n\
-        try_files $uri $uri/ /index.php?$query_string;\n\
-    }\n\
-\n\
-    location ~ \.php$ {\n\
-        fastcgi_pass 127.0.0.1:9000;\n\
-        fastcgi_index index.php;\n\
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
-        include fastcgi_params;\n\
-    }\n\
-}' > /etc/nginx/sites-available/default
-
-# Remove default nginx config
-RUN rm -f /etc/nginx/sites-enabled/default
-RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-
-# Create entrypoint script
+# Create entrypoint script for automatic setup
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-echo "=== POA Churrasco Application Startup ==="\n\
+echo "=== Laravel Application Startup ==="\n\
 \n\
 # Wait for database to be ready\n\
 echo "Waiting for database..."\n\
@@ -104,16 +47,82 @@ while ! nc -z db 5432; do\n\
 done\n\
 echo "Database is ready!"\n\
 \n\
-# Start PHP-FPM in background\n\
-echo "Starting PHP-FPM..."\n\
-php-fpm &\n\
+# Check if this is the first run\n\
+if ! php artisan migrate:status > /dev/null 2>&1; then\n\
+  echo "=== FIRST RUN DETECTED ==="\n\
+  echo "Running initial migrations..."\n\
+  php artisan migrate --force\n\
+  echo "Running initial seeders..."\n\
+  php artisan db:seed --force\n\
+  echo "First run completed successfully!"\n\
+else\n\
+  echo "=== CHECKING FOR UPDATES ==="\n\
+  \n\
+  # Check for pending migrations\n\
+  PENDING_MIGRATIONS=$(php artisan migrate:status | grep -c "Pending" || echo "0")\n\
+  if [ "$PENDING_MIGRATIONS" -gt 0 ]; then\n\
+    echo "Found $PENDING_MIGRATIONS pending migrations - running..."\n\
+    php artisan migrate --force\n\
+    echo "Migrations completed!"\n\
+  else\n\
+    echo "No pending migrations - database is up to date"\n\
+  fi\n\
+  \n\
+  # Check if seeders need to be run (only if tables are empty)\n\
+  USER_COUNT=$(php artisan tinker --execute="echo App\\Models\\User::count();" 2>/dev/null || echo "0")\n\
+  if [ "$USER_COUNT" -eq 0 ]; then\n\
+    echo "No users found - running seeders..."\n\
+    php artisan db:seed --force\n\
+    echo "Seeders completed!"\n\
+  else\n\
+    echo "Data already exists - skipping seeders"\n\
+  fi\n\
+fi\n\
 \n\
-# Start Nginx in foreground\n\
-echo "Starting Nginx..."\n\
-nginx -g "daemon off;"' > /usr/local/bin/entrypoint.sh
+# Always optimize cache for production\n\
+echo "=== OPTIMIZING CACHE ==="\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+echo "Cache optimized!"\n\
+\n\
+# Sync external reviews automatically (only if Google API key is configured)\n\
+if [ ! -z "$GOOGLE_PLACES_API_KEY" ]; then\n\
+  echo "=== SYNCING EXTERNAL REVIEWS ==="\n\
+  php artisan reviews:sync-external --limit=10 --force\n\
+  echo "External reviews synced!"\n\
+else\n\
+  echo "Google Places API key not configured - skipping external reviews sync"\n\
+fi\n\
+\n\
+echo "=== APPLICATION READY ==="\n\
+echo "Starting PHP-FPM..."\n\
+exec php-fpm' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Expose port 80
-EXPOSE 80
-CMD ["/usr/local/bin/entrypoint.sh"]
+# Install netcat and cron for database connectivity check and scheduled tasks
+RUN apt-get update && apt-get install -y netcat-traditional cron && rm -rf /var/lib/apt/lists/*
+
+# Copy cron job file
+COPY docker/cron/reviews-sync /etc/cron.d/reviews-sync
+
+# Set proper permissions for cron job
+RUN chmod 0644 /etc/cron.d/reviews-sync
+
+# Create log directories
+RUN mkdir -p /var/log && touch /var/log/reviews-sync.log /var/log/cache-clear.log /var/log/cache-optimize.log
+
+# Start cron service in background
+RUN echo '#!/bin/bash\n\
+# Start cron daemon\n\
+service cron start\n\
+\n\
+# Start the main entrypoint\n\
+exec /usr/local/bin/entrypoint.sh' > /usr/local/bin/start.sh
+
+RUN chmod +x /usr/local/bin/start.sh
+
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["/usr/local/bin/start.sh"]
