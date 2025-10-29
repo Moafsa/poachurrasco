@@ -29,8 +29,23 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy all application code
-COPY . /var/www
+# Copy specific Laravel files and directories
+COPY composer.json composer.lock package.json package-lock.json ./
+COPY app/ ./app/
+COPY config/ ./config/
+COPY database/ ./database/
+COPY routes/ ./routes/
+COPY bootstrap/ ./bootstrap/
+COPY public/ ./public/
+COPY resources/ ./resources/
+COPY storage/ ./storage/
+COPY tests/ ./tests/
+COPY artisan ./
+COPY phpunit.xml ./
+COPY postcss.config.js ./
+COPY tailwind.config.js ./
+COPY vite.config.js ./
+COPY .env ./
 
 # Debug: Check what was copied
 RUN echo "=== DEBUG: Files copied to container ===" && \
