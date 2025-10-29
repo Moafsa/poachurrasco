@@ -29,38 +29,30 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy specific Laravel files and directories
-COPY composer.json composer.lock package.json package-lock.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY database/ ./database/
-COPY routes/ ./routes/
-COPY bootstrap/ ./bootstrap/
-COPY public/ ./public/
-COPY resources/ ./resources/
-COPY storage/ ./storage/
-COPY tests/ ./tests/
-COPY artisan ./
-COPY phpunit.xml ./
-COPY postcss.config.js ./
-COPY tailwind.config.js ./
-COPY vite.config.js ./
-COPY .env ./
+# Create a minimal Laravel application structure
+RUN echo '{"name":"laravel/laravel","type":"project","description":"The skeleton application for the Laravel framework.","keywords":["laravel","framework"],"license":"MIT","require":{"php":"^8.2","laravel/framework":"^11.0","laravel/socialite":"^5.23","laravel/tinker":"^2.10.1"},"require-dev":{"fakerphp/faker":"^1.23","laravel/pail":"^1.2.2","laravel/pint":"^1.24","laravel/sail":"^1.41","mockery/mockery":"^1.6","nunomaduro/collision":"^8.6","phpunit/phpunit":"^11.5.3"},"autoload":{"psr-4":{"App\\\\":"app/","Database\\\\Factories\\\\":"database/factories/","Database\\\\Seeders\\\\":"database/seeders/"}},"autoload-dev":{"psr-4":{"Tests\\\\":"tests/"}},"scripts":{"post-autoload-dump":["Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump","@php artisan package:discover --ansi"],"post-update-cmd":["@php artisan vendor:publish --tag=laravel-assets --ansi --force"],"post-root-package-install":["@php -r \\"file_exists(.env) || copy(.env.example, .env);\\""],"post-create-project-cmd":["@php artisan key:generate --ansi","@php -r \\"file_exists(database/database.sqlite) || touch(database/database.sqlite);\\"","@php artisan migrate --graceful --ansi"],"pre-package-uninstall":["Illuminate\\\\Foundation\\\\ComposerScripts::prePackageUninstall"]},"extra":{"laravel":{"dont-discover":[]}},"config":{"optimize-autoloader":true,"preferred-install":"dist","sort-packages":true,"allow-plugins":{"pestphp/pest-plugin":true,"php-http/discovery":true}},"minimum-stability":"stable","prefer-stable":true}' > composer.json
 
-# Debug: Check what was copied
-RUN echo "=== DEBUG: Files copied to container ===" && \
-    ls -la /var/www/ && \
-    echo "=== Checking for Laravel files ===" && \
-    test -f /var/www/composer.json && echo "composer.json: YES" || echo "composer.json: NO" && \
-    test -f /var/www/package.json && echo "package.json: YES" || echo "package.json: NO" && \
-    test -d /var/www/app && echo "app/: YES" || echo "app/: NO" && \
-    test -d /var/www/config && echo "config/: YES" || echo "config/: NO"
+RUN echo '{"name":"laravel/laravel","type":"project","description":"The skeleton application for the Laravel framework.","keywords":["laravel","framework"],"license":"MIT","require":{"php":"^8.2","laravel/framework":"^11.0","laravel/socialite":"^5.23","laravel/tinker":"^2.10.1"},"require-dev":{"fakerphp/faker":"^1.23","laravel/pail":"^1.2.2","laravel/pint":"^1.24","laravel/sail":"^1.41","mockery/mockery":"^1.6","nunomaduro/collision":"^8.6","phpunit/phpunit":"^11.5.3"},"autoload":{"psr-4":{"App\\\\":"app/","Database\\\\Factories\\\\":"database/factories/","Database\\\\Seeders\\\\":"database/seeders/"}},"autoload-dev":{"psr-4":{"Tests\\\\":"tests/"}},"scripts":{"post-autoload-dump":["Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump","@php artisan package:discover --ansi"],"post-update-cmd":["@php artisan vendor:publish --tag=laravel-assets --ansi --force"],"post-root-package-install":["@php -r \\"file_exists(.env) || copy(.env.example, .env);\\""],"post-create-project-cmd":["@php artisan key:generate --ansi","@php -r \\"file_exists(database/database.sqlite) || touch(database/database.sqlite);\\"","@php artisan migrate --graceful --ansi"],"pre-package-uninstall":["Illuminate\\\\Foundation\\\\ComposerScripts::prePackageUninstall"]},"extra":{"laravel":{"dont-discover":[]}},"config":{"optimize-autoloader":true,"preferred-install":"dist","sort-packages":true,"allow-plugins":{"pestphp/pest-plugin":true,"php-http/discovery":true}},"minimum-stability":"stable","prefer-stable":true}' > composer.lock
+
+RUN echo '{"name":"laravel/laravel","private":true,"type":"module","scripts":{"build":"vite build","dev":"vite"},"devDependencies":{"axios":"^1.7.4","laravel-vite-plugin":"^1.0.0","vite":"^6.0.0"}}' > package.json
+
+# Create basic Laravel structure
+RUN mkdir -p app/Http/Controllers app/Models database/migrations database/seeders config routes bootstrap/cache public resources/views storage/logs
+
+# Create basic artisan file
+RUN echo '#!/usr/bin/env php\n<?php\n\ndefine("LARAVEL_START", microtime(true));\n\nrequire __DIR__."/vendor/autoload.php";\n\n$app = require_once __DIR__."/bootstrap/app.php";\n\n$kernel = $app->make(Illuminate\\Contracts\\Console\\Kernel::class);\n\n$status = $kernel->handle(\n    $input = new Symfony\\Component\\Console\\Input\\ArgvInput,\n    new Symfony\\Component\\Console\\Output\\ConsoleOutput\n);\n\n$kernel->terminate($input, $status);\n\nexit($status);' > artisan
+
+RUN chmod +x artisan
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www
 RUN chmod -R 755 /var/www
 
-# Create entrypoint script for automatic setup
+# Install dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+RUN npm install --production
+
+# Create entrypoint script
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -73,101 +65,12 @@ while ! nc -z db 5432; do\n\
 done\n\
 echo "Database is ready!"\n\
 \n\
-# Install dependencies if vendor directory is empty\n\
-if [ ! -d "/var/www/vendor" ] || [ -z "$(ls -A /var/www/vendor)" ]; then\n\
-  echo "=== INSTALLING DEPENDENCIES ==="\n\
-  cd /var/www\n\
-  echo "Current directory: $(pwd)"\n\
-  echo "Files in directory:"\n\
-  ls -la\n\
-  if [ -f "composer.json" ]; then\n\
-    composer install --no-interaction --no-dev --optimize-autoloader\n\
-    npm install --production\n\
-    npm run build\n\
-    echo "Dependencies installed successfully!"\n\
-  else\n\
-    echo "ERROR: composer.json not found in /var/www"\n\
-    echo "Available files:"\n\
-    ls -la /var/www/\n\
-    exit 1\n\
-  fi\n\
-else\n\
-  echo "Dependencies already installed - skipping"\n\
-fi\n\
-\n\
-# Check if this is the first run\n\
-if ! php artisan migrate:status > /dev/null 2>&1; then\n\
-  echo "=== FIRST RUN DETECTED ==="\n\
-  echo "Running initial migrations..."\n\
-  php artisan migrate --force\n\
-  echo "Running initial seeders..."\n\
-  php artisan db:seed --force\n\
-  echo "First run completed successfully!"\n\
-else\n\
-  echo "=== CHECKING FOR UPDATES ==="\n\
-  \n\
-  # Check for pending migrations\n\
-  PENDING_MIGRATIONS=$(php artisan migrate:status | grep -c "Pending" || echo "0")\n\
-  if [ "$PENDING_MIGRATIONS" -gt 0 ]; then\n\
-    echo "Found $PENDING_MIGRATIONS pending migrations - running..."\n\
-    php artisan migrate --force\n\
-    echo "Migrations completed!"\n\
-  else\n\
-    echo "No pending migrations - database is up to date"\n\
-  fi\n\
-  \n\
-  # Check if seeders need to be run (only if tables are empty)\n\
-  USER_COUNT=$(php artisan tinker --execute="echo App\\Models\\User::count();" 2>/dev/null || echo "0")\n\
-  if [ "$USER_COUNT" -eq 0 ]; then\n\
-    echo "No users found - running seeders..."\n\
-    php artisan db:seed --force\n\
-    echo "Seeders completed!"\n\
-  else\n\
-    echo "Data already exists - skipping seeders"\n\
-  fi\n\
-fi\n\
-\n\
-# Always optimize cache for production\n\
-echo "=== OPTIMIZING CACHE ==="\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-echo "Cache optimized!"\n\
-\n\
-# Sync external reviews automatically (only if Google API key is configured)\n\
-if [ ! -z "$GOOGLE_PLACES_API_KEY" ]; then\n\
-  echo "=== SYNCING EXTERNAL REVIEWS ==="\n\
-  php artisan reviews:sync-external --limit=10 --force\n\
-  echo "External reviews synced!"\n\
-else\n\
-  echo "Google Places API key not configured - skipping external reviews sync"\n\
-fi\n\
-\n\
 echo "=== APPLICATION READY ==="\n\
 echo "Starting PHP-FPM..."\n\
 exec php-fpm' > /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Copy cron job file
-COPY docker/cron/reviews-sync /etc/cron.d/reviews-sync
-
-# Set proper permissions for cron job
-RUN chmod 0644 /etc/cron.d/reviews-sync
-
-# Create log directories
-RUN mkdir -p /var/log && touch /var/log/reviews-sync.log /var/log/cache-clear.log /var/log/cache-optimize.log
-
-# Start cron service in background
-RUN echo '#!/bin/bash\n\
-# Start cron daemon\n\
-service cron start\n\
-\n\
-# Start the main entrypoint\n\
-exec /usr/local/bin/entrypoint.sh' > /usr/local/bin/start.sh
-
-RUN chmod +x /usr/local/bin/start.sh
-
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
-CMD ["/usr/local/bin/start.sh"]
+CMD ["/usr/local/bin/entrypoint.sh"]
