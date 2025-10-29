@@ -45,8 +45,24 @@ echo "<p><strong>Database:</strong> " . (extension_loaded("pdo_pgsql") ? "Postgr
 echo "<p><strong>Redis:</strong> " . (extension_loaded("redis") ? "Redis OK" : "Redis ERROR") . "</p>";\n\
 echo "<p><strong>PHP Version:</strong> " . phpversion() . "</p>";\n\
 echo "<p><strong>Time:</strong> " . date("Y-m-d H:i:s") . "</p>";\n\
-echo "<p><strong>Server:</strong> " . $_SERVER["SERVER_NAME"] ?? "Unknown" . "</p>";\n\
+echo "<p><strong>Server:</strong> " . ($_SERVER["SERVER_NAME"] ?? "Unknown") . "</p>";\n\
+echo "<p><strong>Request URI:</strong> " . ($_SERVER["REQUEST_URI"] ?? "Unknown") . "</p>";\n\
+echo "<p><strong>Document Root:</strong> " . ($_SERVER["DOCUMENT_ROOT"] ?? "Unknown") . "</p>";\n\
 ?>' > /var/www/index.php
+
+# Also create index.html as fallback
+RUN echo '<!DOCTYPE html>\n\
+<html>\n\
+<head>\n\
+    <title>POA Churrasco</title>\n\
+    <meta charset="UTF-8">\n\
+</head>\n\
+<body>\n\
+    <h1>POA Churrasco - Sistema Funcionando!</h1>\n\
+    <p>Se você está vendo esta página, o servidor web está funcionando!</p>\n\
+    <p><a href="/index.php">Clique aqui para ver a versão PHP</a></p>\n\
+</body>\n\
+</html>' > /var/www/index.html
 
 # Configure Nginx
 RUN echo 'server {\n\
@@ -69,7 +85,14 @@ RUN echo 'server {\n\
     location ~ /\.ht {\n\
         deny all;\n\
     }\n\
+\n\
+    # Debug: log all requests\n\
+    access_log /var/log/nginx/access.log;\n\
+    error_log /var/log/nginx/error.log;\n\
 }' > /etc/nginx/sites-available/default
+
+# Create nginx log directory
+RUN mkdir -p /var/log/nginx && chown -R www-data:www-data /var/log/nginx
 
 # Create entrypoint script that starts both Nginx and PHP-FPM
 RUN echo '#!/bin/bash\n\
