@@ -12,7 +12,13 @@
     <link href="https://fonts.bunny.net/css?family=poppins:wght@300;400;500;600;700;800;900" rel="stylesheet" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ asset('app.css') }}">
+    @if(config('app.env') === 'production')
+        <link rel="stylesheet" href="{{ config('app.url') }}/build/assets/app-DWm-uxc9.css">
+        <script type="module" src="{{ config('app.url') }}/build/assets/app-BVWLDaMi.js"></script>
+    @else
+        <link rel="stylesheet" href="{{ asset('app.css') }}">
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
 </head>
 <body class="font-sans antialiased bg-gray-50">
     <div class="min-h-screen flex flex-col">
