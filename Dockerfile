@@ -38,15 +38,13 @@ RUN chmod -R 755 /var/www
 
 # Create a simple PHP application that works
 RUN echo '<?php\n\
-echo "POA Churrasco - Sistema Funcionando!";\n\
-echo "<br>";\n\
-echo "Database: " . (extension_loaded("pdo_pgsql") ? "PostgreSQL OK" : "PostgreSQL ERROR");\n\
-echo "<br>";\n\
-echo "Redis: " . (extension_loaded("redis") ? "Redis OK" : "Redis ERROR");\n\
-echo "<br>";\n\
-echo "PHP Version: " . phpversion();\n\
-echo "<br>";\n\
-echo "Time: " . date("Y-m-d H:i:s");\n\
+header("Content-Type: text/html; charset=UTF-8");\n\
+echo "<h1>POA Churrasco - Sistema Funcionando!</h1>";\n\
+echo "<p><strong>Database:</strong> " . (extension_loaded("pdo_pgsql") ? "PostgreSQL OK" : "PostgreSQL ERROR") . "</p>";\n\
+echo "<p><strong>Redis:</strong> " . (extension_loaded("redis") ? "Redis OK" : "Redis ERROR") . "</p>";\n\
+echo "<p><strong>PHP Version:</strong> " . phpversion() . "</p>";\n\
+echo "<p><strong>Time:</strong> " . date("Y-m-d H:i:s") . "</p>";\n\
+echo "<p><strong>Server:</strong> " . $_SERVER["SERVER_NAME"] ?? "Unknown" . "</p>";\n\
 ?>' > /var/www/index.php
 
 # Create entrypoint script
