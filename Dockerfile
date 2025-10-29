@@ -53,10 +53,20 @@ echo "Database is ready!"\n\
 if [ ! -d "/var/www/vendor" ] || [ -z "$(ls -A /var/www/vendor)" ]; then\n\
   echo "=== INSTALLING DEPENDENCIES ==="\n\
   cd /var/www\n\
-  composer install --no-interaction --no-dev --optimize-autoloader\n\
-  npm install --production\n\
-  npm run build\n\
-  echo "Dependencies installed successfully!"\n\
+  echo "Current directory: $(pwd)"\n\
+  echo "Files in directory:"\n\
+  ls -la\n\
+  if [ -f "composer.json" ]; then\n\
+    composer install --no-interaction --no-dev --optimize-autoloader\n\
+    npm install --production\n\
+    npm run build\n\
+    echo "Dependencies installed successfully!"\n\
+  else\n\
+    echo "ERROR: composer.json not found in /var/www"\n\
+    echo "Available files:"\n\
+    ls -la /var/www/\n\
+    exit 1\n\
+  fi\n\
 else\n\
   echo "Dependencies already installed - skipping"\n\
 fi\n\
