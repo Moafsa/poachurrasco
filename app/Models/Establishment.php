@@ -2,18 +2,66 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Establishment extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        try {
+            static::creating(function (self $establishment): void {
+                if (empty($establishment->slug)) {
+                    $establishment->slug = static::generateUniqueSlug($establishment->name);
+                }
+            });
+
+            static::updating(function (self $establishment): void {
+                if ($establishment->isDirty('name')) {
+                    $establishment->slug = static::generateUniqueSlug($establishment->name, $establishment->id);
+                }
+            });
+        } catch (\Exception $e) {
+            \Log::error('Error in Establishment booted method: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate a unique slug for the establishment using the provided name.
+     */
+    protected static function generateUniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $baseSlug = Str::slug($name);
+
+        if ($baseSlug === '') {
+            $baseSlug = 'establishment';
+        }
+
+        $slug = $baseSlug;
+        $suffix = 1;
+
+        while (
+            static::query()
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->where('slug', $slug)
+                ->exists()
+        ) {
+            $slug = "{$baseSlug}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
     protected $fillable = [
         'user_id',
         'name',
+        'slug',
         'description',
         'address',
         'city',
@@ -135,6 +183,14 @@ class Establishment extends Model
     public function externalReviews(): HasMany
     {
         return $this->hasMany(ExternalReview::class);
+    }
+
+    /**
+     * Route key for implicit model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
     }
 
     public function allReviews()

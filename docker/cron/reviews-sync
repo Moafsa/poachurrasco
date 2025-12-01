@@ -9,3 +9,16 @@
 
 # Otimizar cache diariamente às 4h
 0 4 * * * cd /var/www && php artisan config:cache && php artisan route:cache && php artisan view:cache >> /var/log/cache-optimize.log 2>&1
+
+
+
+
+
+
+
+
+
+
+
+
+

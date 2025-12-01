@@ -1,561 +1,633 @@
 @extends('layouts.app')
 
-@section('title', 'Mapa de Estabelecimentos')
+@section('title', 'Mapa Interativo')
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <!-- Header Section -->
-    <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex justify-between items-center">
+    <header class="bg-white border-b shadow-sm">
+        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Mapa de Estabelecimentos</h1>
-                    <p class="text-gray-600 mt-2">Descubra os melhores lugares para churrasco em Porto Alegre</p>
+                <h1 class="text-3xl font-bold text-gray-900">Encontre os melhores pontos de churrasco</h1>
+                <p class="mt-1 text-sm text-gray-600">
+                    Explore estabelecimentos do POA Capital do Churrasco, filtre por categoria, avaliação ou comodidades, e visite páginas dinâmicas alimentadas por dados do painel.
+                </p>
                 </div>
-                <div class="flex space-x-4">
-                    <!-- Search Box -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Buscar estabelecimentos..." 
-                               class="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-churrasco-500 focus:border-churrasco-500">
-                        <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    <label for="searchInput" class="sr-only">Buscar estabelecimentos</label>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Buscar por nome ou endereço"
+                        class="w-72 rounded-lg border border-gray-300 px-4 py-2 pr-10 text-sm text-gray-700 focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500"
+                    >
+                    <svg class="pointer-events-none absolute right-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    
-                    <!-- Filter Button -->
-                    <button id="filterBtn" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                <button id="toggleFilters" class="inline-flex items-center gap-2 rounded-lg bg-churrasco-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-churrasco-600">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
                         Filtros
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
+    </header>
 
-    <!-- Main Content -->
-    <div class="flex h-screen">
-        <!-- Map Container -->
-        <div class="flex-1 relative">
-            <div id="map" class="w-full h-full"></div>
-            
-            <!-- Map Controls -->
-            <div class="absolute top-4 right-4 space-y-2">
-                <button id="locateBtn" class="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg shadow-lg border border-gray-200 transition-colors duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+    <div class="flex h-[calc(100vh-200px)]">
+        <section class="relative flex-1">
+            <div id="map" class="h-full w-full"></div>
+            <div class="absolute top-4 right-4 flex flex-col gap-2">
+                <button id="locateBtn" class="rounded-lg border border-gray-200 bg-white p-2 shadow transition hover:bg-gray-100" title="Localizar-me">
+                    <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </button>
-                <button id="fullscreenBtn" class="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg shadow-lg border border-gray-200 transition-colors duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                <button id="fullscreenBtn" class="rounded-lg border border-gray-200 bg-white p-2 shadow transition hover:bg-gray-100" title="Tela cheia">
+                    <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M4 4l5 5m11-1V4h-4m4 0l-5 5M4 16v4h4m-4 0l5-5m11 5v-4h-4m4 4l-5-5" />
                     </svg>
                 </button>
             </div>
+        </section>
+
+        <aside class="flex w-96 flex-col border-l border-gray-200 bg-white">
+            <div id="filterPanel" class="space-y-6 border-b border-gray-200 p-6">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Filtrar resultados</h2>
+                    <p class="text-sm text-gray-500">Ajuste o mapa às suas preferências e encontre os estabelecimentos certos.</p>
         </div>
-
-        <!-- Sidebar -->
-        <div class="w-96 bg-white shadow-lg overflow-y-auto">
-            <!-- Filter Panel -->
-            <div id="filterPanel" class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Filtros</h3>
-                
-                <!-- Category Filter -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                    <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-churrasco-500 focus:border-churrasco-500">
+                <div>
+                    <label for="categoryFilter" class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select id="categoryFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
                         <option value="">Todas as categorias</option>
-                        <option value="churrascaria">Churrascarias</option>
-                        <option value="açougue">Açougues</option>
-                        <option value="supermercado">Supermercados</option>
-                        <option value="restaurante">Restaurantes</option>
-                        <option value="bar">Bares</option>
-                        <option value="lanchonete">Lanchonetes</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category }}">{{ ucfirst($category) }}</option>
+                        @endforeach
                     </select>
                 </div>
-
-                <!-- Price Range Filter -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Faixa de Preço</label>
-                    <select id="priceFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-churrasco-500 focus:border-churrasco-500">
-                        <option value="">Todas as faixas</option>
-                        <option value="$">$ - Econômico</option>
-                        <option value="$$">$$ - Moderado</option>
-                        <option value="$$$">$$$ - Caro</option>
-                        <option value="$$$$">$$$$ - Muito Caro</option>
+                <div>
+                    <label for="priceFilter" class="block text-sm font-medium text-gray-700">Faixa de preço</label>
+                    <select id="priceFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
+                        <option value="">Qualquer preço</option>
+                        <option value="1">$ · Econômico</option>
+                        <option value="2">$$ · Casual</option>
+                        <option value="3">$$$ · Premium</option>
+                        <option value="4">$$$$ · Exclusivo</option>
                     </select>
                 </div>
-
-                <!-- Rating Filter -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Avaliação Mínima</label>
-                    <select id="ratingFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-churrasco-500 focus:border-churrasco-500">
+                <div>
+                    <label for="ratingFilter" class="block text-sm font-medium text-gray-700">Avaliação mínima</label>
+                    <select id="ratingFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
                         <option value="">Qualquer avaliação</option>
-                        <option value="4">4+ estrelas</option>
-                        <option value="3">3+ estrelas</option>
-                        <option value="2">2+ estrelas</option>
-                        <option value="1">1+ estrelas</option>
+                        <option value="4">4.0 e acima</option>
+                        <option value="3">3.0 e acima</option>
+                        <option value="2">2.0 e acima</option>
+                        <option value="1">1.0 e acima</option>
                     </select>
                 </div>
-
-                <!-- Amenities Filter -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Comodidades</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" class="amenity-filter" value="estacionamento" class="rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
-                            <span class="ml-2 text-sm text-gray-700">Estacionamento</span>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-700">Comodidades</h3>
+                    <div class="mt-3 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <label class="inline-flex items-center gap-2">
+                            <input type="checkbox" value="estacionamento" class="amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                            Estacionamento
                         </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="amenity-filter" value="wifi" class="rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
-                            <span class="ml-2 text-sm text-gray-700">Wi-Fi</span>
+                        <label class="inline-flex items-center gap-2">
+                            <input type="checkbox" value="wifi" class="amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                            Wi-Fi
                         </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="amenity-filter" value="delivery" class="rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
-                            <span class="ml-2 text-sm text-gray-700">Delivery</span>
+                        <label class="inline-flex items-center gap-2">
+                            <input type="checkbox" value="delivery" class="amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                            Delivery
                         </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="amenity-filter" value="acessibilidade" class="rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
-                            <span class="ml-2 text-sm text-gray-700">Acessibilidade</span>
+                        <label class="inline-flex items-center gap-2">
+                            <input type="checkbox" value="acessibilidade" class="amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                            Acessibilidade
                         </label>
                     </div>
                 </div>
-
-                <button id="applyFilters" class="w-full bg-churrasco-500 hover:bg-churrasco-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200">
-                    Aplicar Filtros
+                <button id="applyFilters" class="w-full rounded-lg bg-churrasco-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-churrasco-600">
+                    Aplicar filtros
                 </button>
             </div>
 
-            <!-- Results List -->
-            <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Estabelecimentos</h3>
-                <div id="establishmentsList" class="space-y-4">
-                    <!-- Results will be loaded here -->
+            <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-500">Resultados</h2>
+                <span id="resultsCount" class="text-sm text-gray-600">0 estabelecimentos</span>
+            </div>
+
+            <div class="flex flex-1 flex-col overflow-hidden">
+                <div id="establishmentsList" class="flex-1 space-y-4 overflow-y-auto px-6 py-6">
+                    <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                        Ajuste os filtros ou busque para carregar estabelecimentos.
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="paginationControls" class="hidden border-t border-gray-200 bg-white px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            <span id="paginationInfo">Mostrando 0-0 de 0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="prevPage" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                                Anterior
+                            </button>
+                            <div id="pageNumbers" class="flex items-center gap-1 text-sm text-gray-600"></div>
+                            <button id="nextPage" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                                Próxima
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
 </div>
 
-<!-- Google Maps Script -->
 <script>
-let map;
-let markers = [];
-let establishments = [];
-let allEstablishments = []; // Store all establishments for pagination
-let currentPage = 1;
-let establishmentsPerPage = 10;
-let infoWindow;
+    const mapState = {
+        map: null,
+        markers: [],
+        infoWindow: null,
+        establishments: [],
+        filters: {
+            search: '',
+            category: '',
+            priceLevel: '',
+            ratingMin: '',
+            amenities: [],
+        },
+        pagination: {
+            currentPage: 1,
+            itemsPerPage: 10,
+        },
+    };
 
-// Sample establishments data (in production, this would come from the backend)
-const sampleEstablishments = [
-    {
-        id: 1,
-        name: "Churrascaria Gaúcha",
-        address: "Rua da Praia, 123 - Centro",
-        latitude: -30.0346,
-        longitude: -51.2177,
-        category: "churrascaria",
-        price_range: "$$",
-        rating: 4.2,
-        review_count: 127,
-        amenities: ["estacionamento", "wifi", "delivery"],
-        phone: "(51) 3222-1234",
-        website: "https://churrascariagaucha.com"
-    },
-    {
-        id: 2,
-        name: "Açougue Central",
-        address: "Av. Borges de Medeiros, 456 - Centro Histórico",
-        latitude: -30.0311,
-        longitude: -51.2305,
-        category: "açougue",
-        price_range: "$",
-        rating: 4.5,
-        review_count: 89,
-        amenities: ["estacionamento"],
-        phone: "(51) 3222-5678"
-    },
-    {
-        id: 3,
-        name: "Supermercado do Churrasco",
-        address: "Rua dos Andradas, 789 - Cidade Baixa",
-        latitude: -30.0408,
-        longitude: -51.2189,
-        category: "supermercado",
-        price_range: "$$",
-        rating: 4.0,
-        review_count: 203,
-        amenities: ["estacionamento", "wifi", "delivery", "acessibilidade"],
-        phone: "(51) 3222-9012"
-    },
-    {
-        id: 4,
-        name: "Bar do Gaúcho",
-        address: "Rua João Pessoa, 321 - Bom Fim",
-        latitude: -30.0259,
-        longitude: -51.2104,
-        category: "bar",
-        price_range: "$$",
-        rating: 4.3,
-        review_count: 156,
-        amenities: ["wifi"],
-        phone: "(51) 3222-3456"
-    },
-    {
-        id: 5,
-        name: "Restaurante Tradicional",
-        address: "Av. Independência, 654 - Independência",
-        latitude: -30.0275,
-        longitude: -51.2289,
-        category: "restaurante",
-        price_range: "$$$",
-        rating: 4.7,
-        review_count: 98,
-        amenities: ["estacionamento", "wifi", "acessibilidade"],
-        phone: "(51) 3222-7890"
-    }
-];
+    const amenitiesTranslation = {
+        'estacionamento': 'estacionamento',
+        'wifi': 'wifi',
+        'delivery': 'delivery',
+        'acessibilidade': 'acessibilidade',
+    };
 
-async function initMap() {
-    // Porto Alegre coordinates
-    const portoAlegre = { lat: -30.0346, lng: -51.2177 };
-    
-    map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 13,
-        center: portoAlegre,
-        styles: [
-            {
-                featureType: "poi",
-                elementType: "labels",
-                stylers: [{ visibility: "off" }]
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const priceFilter = document.getElementById('priceFilter');
+        const ratingFilter = document.getElementById('ratingFilter');
+        const amenityCheckboxes = document.querySelectorAll('.amenity-checkbox');
+        const applyFiltersButton = document.getElementById('applyFilters');
+        const toggleFiltersButton = document.getElementById('toggleFilters');
+        const filterPanel = document.getElementById('filterPanel');
+
+        searchInput.addEventListener('input', debounce((event) => {
+            mapState.filters.search = event.target.value;
+            fetchEstablishments();
+        }, 400));
+
+        categoryFilter.addEventListener('change', (event) => {
+            mapState.filters.category = event.target.value;
+        });
+
+        priceFilter.addEventListener('change', (event) => {
+            mapState.filters.priceLevel = event.target.value;
+        });
+
+        ratingFilter.addEventListener('change', (event) => {
+            mapState.filters.ratingMin = event.target.value;
+        });
+
+        amenityCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                const selected = Array.from(amenityCheckboxes)
+                    .filter((item) => item.checked)
+                    .map((item) => amenitiesTranslation[item.value] ?? item.value);
+                mapState.filters.amenities = selected;
+            });
+        });
+
+        applyFiltersButton.addEventListener('click', () => {
+            mapState.pagination.currentPage = 1; // Reset to first page when filters change
+            fetchEstablishments();
+        });
+
+        // Pagination button handlers
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (mapState.pagination.currentPage > 1) {
+                goToPage(mapState.pagination.currentPage - 1);
             }
-        ]
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(mapState.establishments.length / mapState.pagination.itemsPerPage);
+            if (mapState.pagination.currentPage < totalPages) {
+                goToPage(mapState.pagination.currentPage + 1);
+            }
+        });
+
+        toggleFiltersButton.addEventListener('click', () => {
+            filterPanel.classList.toggle('hidden');
+        });
+
+        document.getElementById('locateBtn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    if (mapState.map) {
+                        mapState.map.setCenter(userLocation);
+                        mapState.map.setZoom(15);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            const mapContainer = document.getElementById('map');
+            if (!document.fullscreenElement) {
+                mapContainer.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
     });
 
-    infoWindow = new google.maps.InfoWindow();
-    
-    // Add event listeners
-    setupEventListeners();
-    
-    // Load establishments
-    await loadEstablishments();
-}
+    window.initMap = function initMap() {
+        const portoAlegre = { lat: -30.0346, lng: -51.2177 };
 
-async function loadEstablishments() {
-    try {
-        // Fetch real establishments from backend
-        const response = await fetch('/api/establishments/map/data?include_external=true');
+        mapState.map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 13,
+            center: portoAlegre,
+            styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
+        });
+
+        mapState.infoWindow = new google.maps.InfoWindow();
+        fetchEstablishments();
+    };
+
+    async function fetchEstablishments() {
+        const params = new URLSearchParams();
+        
+        // Include external establishments based on system settings
+        params.append('include_external', 'true');
+
+        if (mapState.filters.search) {
+            params.append('search', mapState.filters.search);
+        }
+        if (mapState.filters.category) {
+            params.append('category', mapState.filters.category);
+        }
+        if (mapState.filters.priceLevel) {
+            params.append('price_level', mapState.filters.priceLevel);
+        }
+        if (mapState.filters.ratingMin) {
+            params.append('rating_min', mapState.filters.ratingMin);
+        }
+        if (mapState.filters.amenities.length > 0) {
+            mapState.filters.amenities.forEach((amenity) => params.append('amenities[]', amenity));
+        }
+
+        try {
+            const response = await fetch(`/api/establishments/map/data?${params.toString()}`);
         const data = await response.json();
         
         if (data.success) {
-            allEstablishments = data.establishments;
-            establishments = data.establishments;
-            console.log(`Loaded ${data.count} establishments from backend`);
+                mapState.establishments = data.establishments || [];
+                updateMarkers();
+                updateList();
         } else {
-            console.error('Failed to load establishments:', data.error);
-            // Fallback to sample data
-            allEstablishments = sampleEstablishments;
-            establishments = sampleEstablishments;
+                console.error('Erro ao carregar estabelecimentos:', data.error || 'Erro desconhecido');
+                mapState.establishments = [];
+                updateMarkers();
+                updateList();
+            }
+        } catch (error) {
+            console.error('Falha ao carregar estabelecimentos:', error);
+            mapState.establishments = [];
+            updateMarkers();
+            updateList();
         }
-    } catch (error) {
-        console.error('Error loading establishments:', error);
-        // Fallback to sample data
-        establishments = sampleEstablishments;
     }
-    
-    displayEstablishments();
-}
 
-function displayEstablishments() {
-    // Clear existing markers
-    markers.forEach(marker => marker.setMap(null));
-    markers = [];
-    
-    // Add markers for each establishment
-    establishments.forEach(establishment => {
-        // Only add markers if coordinates are valid numbers
-        if (establishment.latitude && establishment.longitude && 
-            !isNaN(parseFloat(establishment.latitude)) && 
-            !isNaN(parseFloat(establishment.longitude))) {
+    function updateMarkers() {
+        mapState.markers.forEach((marker) => marker.setMap(null));
+        mapState.markers = [];
+
+        mapState.establishments.forEach((establishment) => {
+            if (!establishment.latitude || !establishment.longitude) {
+                return;
+            }
+
+            const lat = parseFloat(establishment.latitude);
+            const lng = parseFloat(establishment.longitude);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                return;
+            }
             
             const marker = new google.maps.Marker({
                 position: { 
-                    lat: parseFloat(establishment.latitude), 
-                    lng: parseFloat(establishment.longitude) 
+                    lat: lat,
+                    lng: lng,
                 },
-                map: map,
+                map: mapState.map,
                 title: establishment.name,
-                icon: getMarkerIcon(establishment.category)
+                icon: buildMarkerIcon(establishment.category),
             });
-            
-            marker.addListener("click", () => {
-                showEstablishmentInfo(establishment, marker);
-            });
-            
-            markers.push(marker);
-        } else {
-            console.warn(`Skipping marker for ${establishment.name} - invalid coordinates:`, {
-                lat: establishment.latitude, 
-                lng: establishment.longitude
-            });
-        }
-    });
-    
-    // Update sidebar list
-    updateEstablishmentsList();
-}
 
-function getMarkerIcon(category) {
-    const icons = {
+            marker.addListener('click', () => {
+                mapState.infoWindow.setContent(buildInfoWindow(establishment));
+                mapState.infoWindow.open(mapState.map, marker);
+            });
+
+            mapState.markers.push(marker);
+        });
+    }
+
+    function updateList() {
+        const listContainer = document.getElementById('establishmentsList');
+        const countLabel = document.getElementById('resultsCount');
+        const paginationControls = document.getElementById('paginationControls');
+        const totalItems = mapState.establishments.length;
+
+        countLabel.textContent = `${totalItems} estabelecimento${totalItems === 1 ? '' : 's'}`;
+
+        if (totalItems === 0) {
+            listContainer.innerHTML = `
+                <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                    Não encontramos estabelecimentos com os filtros atuais.
+                </div>
+            `;
+            paginationControls.classList.add('hidden');
+            return;
+        }
+
+        // Reset to first page if current page is out of bounds
+        const totalPages = Math.ceil(totalItems / mapState.pagination.itemsPerPage);
+        if (mapState.pagination.currentPage > totalPages) {
+            mapState.pagination.currentPage = 1;
+        }
+
+        // Calculate pagination
+        const startIndex = (mapState.pagination.currentPage - 1) * mapState.pagination.itemsPerPage;
+        const endIndex = Math.min(startIndex + mapState.pagination.itemsPerPage, totalItems);
+        const paginatedEstablishments = mapState.establishments.slice(startIndex, endIndex);
+
+        // Clear and render paginated items
+        listContainer.innerHTML = '';
+
+        paginatedEstablishments.forEach((establishment) => {
+            const wrapper = document.createElement('article');
+            wrapper.className = 'cursor-pointer rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow';
+            wrapper.innerHTML = buildListItem(establishment);
+            wrapper.addEventListener('click', () => {
+                const marker = mapState.markers.find((item) => item.getTitle() === establishment.name);
+                if (marker) {
+                    mapState.map.panTo(marker.getPosition());
+                    mapState.map.setZoom(15);
+                    mapState.infoWindow.setContent(buildInfoWindow(establishment));
+                    mapState.infoWindow.open(mapState.map, marker);
+                }
+            });
+            listContainer.appendChild(wrapper);
+        });
+
+        // Update pagination controls
+        updatePaginationControls(totalItems, totalPages);
+    }
+
+    function updatePaginationControls(totalItems, totalPages) {
+        const paginationControls = document.getElementById('paginationControls');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const pageNumbers = document.getElementById('pageNumbers');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+
+        if (totalPages <= 1) {
+            paginationControls.classList.add('hidden');
+            return;
+        }
+
+        paginationControls.classList.remove('hidden');
+
+        // Update pagination info
+        const startIndex = (mapState.pagination.currentPage - 1) * mapState.pagination.itemsPerPage + 1;
+        const endIndex = Math.min(startIndex + mapState.pagination.itemsPerPage - 1, totalItems);
+        paginationInfo.textContent = `Mostrando ${startIndex}-${endIndex} de ${totalItems}`;
+
+        // Update page numbers
+        const currentPage = mapState.pagination.currentPage;
+        let pageNumbersHTML = '';
+        
+        // Show page numbers (max 5 pages visible)
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        
+        // Adjust start page if we're near the end
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        // Show first page and ellipsis if needed
+        if (startPage > 1) {
+            pageNumbersHTML += `<button class="px-2 py-1 text-sm text-gray-600 hover:text-gray-900 rounded" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) {
+                pageNumbersHTML += `<span class="px-2 text-sm text-gray-400">...</span>`;
+            }
+        }
+
+        // Show page numbers in range
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+                pageNumbersHTML += `<span class="px-2 py-1 text-sm font-semibold text-churrasco-600 bg-churrasco-50 rounded">${i}</span>`;
+            } else {
+                pageNumbersHTML += `<button class="px-2 py-1 text-sm text-gray-600 hover:text-gray-900 rounded" onclick="goToPage(${i})">${i}</button>`;
+            }
+        }
+
+        // Show last page and ellipsis if needed
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                pageNumbersHTML += `<span class="px-2 text-sm text-gray-400">...</span>`;
+            }
+            pageNumbersHTML += `<button class="px-2 py-1 text-sm text-gray-600 hover:text-gray-900 rounded" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+        }
+
+        // Also show "Página X de Y" text
+        pageNumbers.innerHTML = `<span class="text-xs text-gray-500 mr-2">Página ${currentPage} de ${totalPages}</span>` + pageNumbersHTML;
+
+        // Update button states
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(mapState.establishments.length / mapState.pagination.itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+            mapState.pagination.currentPage = page;
+            updateList();
+            // Scroll to top of list
+            document.getElementById('establishmentsList').scrollTop = 0;
+        }
+    }
+
+    function buildMarkerIcon(category) {
+        const emojiMap = {
         churrascaria: '🔥',
-        açougue: '🥩',
+            'açougue': '🥩',
         supermercado: '🛒',
         restaurante: '🍽️',
         bar: '🍺',
-        lanchonete: '🍔'
+            lanchonete: '🍔',
     };
+
+        const emoji = emojiMap[category] || '📍';
     
     return {
         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
             <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="20" cy="20" r="18" fill="#f97316" stroke="#fff" stroke-width="2"/>
-                <text x="20" y="26" text-anchor="middle" font-size="16" fill="white">${icons[category] || '📍'}</text>
+                    <circle cx="20" cy="20" r="18" fill="#f97316" stroke="#fff" stroke-width="2" />
+                    <text x="20" y="26" text-anchor="middle" font-size="16" fill="white">${emoji}</text>
             </svg>
         `)}`,
         scaledSize: new google.maps.Size(40, 40),
-        anchor: new google.maps.Point(20, 20)
-    };
-}
+            anchor: new google.maps.Point(20, 20),
+        };
+    }
 
-function showEstablishmentInfo(establishment, marker) {
-    const content = `
-        <div class="p-4 max-w-sm">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">${establishment.name}</h3>
-            ${establishment.photo_urls && establishment.photo_urls.length > 0 ? 
-                `<img src="${establishment.photo_urls[0]}" alt="${establishment.name}" class="w-full h-32 object-cover rounded-lg mb-2">` : ''
-            }
-            <p class="text-gray-600 text-sm mb-2">${(establishment.formatted_address && establishment.formatted_address !== 'null') ? establishment.formatted_address : (establishment.address && establishment.address !== 'null') ? establishment.address : 'Endereço não disponível'}</p>
-            <div class="flex items-center mb-2">
-                <div class="flex text-yellow-400 mr-2">
-                    ${Array(5).fill(0).map((_, i) => 
-                        `<svg class="w-4 h-4 ${i < Math.floor(establishment.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>`
-                    ).join('')}
+    function buildInfoWindow(establishment) {
+        const rating = parseFloat(establishment.rating ?? 0).toFixed(1);
+        const totalReviews = establishment.user_ratings_total ?? establishment.review_count ?? 0;
+        const address = establishment.formatted_address ?? establishment.address ?? 'Endereço não disponível';
+        const slug = establishment.slug ?? establishment.id;
+
+        return `
+            <div class="max-w-sm p-2">
+                <h3 class="text-lg font-semibold text-gray-900">${establishment.name}</h3>
+                <p class="mt-1 text-sm text-gray-600">${address}</p>
+                <div class="mt-3 flex items-center gap-3 text-sm text-gray-600">
+                    <span class="flex items-center gap-1 text-orange-500">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        ${rating}
+                    </span>
+                    <span>${totalReviews} avaliações</span>
                 </div>
-                <span class="text-sm text-gray-600">${establishment.rating || 0} ${establishment.user_ratings_total ? `(${establishment.user_ratings_total})` : ''}</span>
-            </div>
-            <div class="flex space-x-2">
-                <a href="/estabelecimento/${establishment.id}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors duration-200">
-                    Ver Detalhes
-                </a>
-                <button onclick="addToFavorites(${establishment.id})" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm font-semibold transition-colors duration-200">
-                    ❤️ Favoritar
-                </button>
+                <div class="mt-4 flex gap-2">
+                    <a href="/establishments/${slug}" class="inline-flex flex-1 items-center justify-center rounded-lg bg-churrasco-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-churrasco-600">Ver detalhes</a>
+                    <button type="button" class="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50" onclick="toggleFavorite(${establishment.id})">❤</button>
             </div>
         </div>
     `;
-    
-    infoWindow.setContent(content);
-    infoWindow.open(map, marker);
-}
+    }
 
-function updateEstablishmentsList() {
-    const listContainer = document.getElementById('establishmentsList');
-    listContainer.innerHTML = '';
-    
-    // Calculate pagination
-    const startIndex = (currentPage - 1) * establishmentsPerPage;
-    const endIndex = startIndex + establishmentsPerPage;
-    const paginatedEstablishments = establishments.slice(startIndex, endIndex);
-    
-    // Display establishments for current page
-    paginatedEstablishments.forEach(establishment => {
-        const establishmentElement = document.createElement('div');
-        establishmentElement.className = 'p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer';
-        establishmentElement.innerHTML = `
-            <div class="flex space-x-3">
-                <div class="flex-shrink-0">
-                    ${establishment.photo_urls && establishment.photo_urls.length > 0 ? 
-                        `<img src="${establishment.photo_urls[0]}" alt="${establishment.name}" class="w-16 h-16 object-cover rounded-lg">` :
-                        `<div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                        </div>`
-                    }
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h4 class="font-semibold text-gray-900 mb-1">${establishment.name}</h4>
-                    <p class="text-sm text-gray-600 mb-2">${(establishment.formatted_address && establishment.formatted_address !== 'null') ? establishment.formatted_address : (establishment.address && establishment.address !== 'null') ? establishment.address : 'Endereço não disponível'}</p>
-            <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center">
-                    <div class="flex text-yellow-400 mr-2">
-                        ${Array(5).fill(0).map((_, i) => 
-                            `<svg class="w-3 h-3 ${i < Math.floor(establishment.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>`
-                        ).join('')}
+    function buildListItem(establishment) {
+        const rating = parseFloat(establishment.rating ?? 0).toFixed(1);
+        const totalReviews = establishment.user_ratings_total ?? establishment.review_count ?? 0;
+        const address = establishment.formatted_address ?? establishment.address ?? 'Endereço não disponível';
+        const status = establishment.business_status && establishment.business_status !== 'OPERATIONAL'
+            ? `<span class="text-xs font-medium uppercase text-red-500">${establishment.business_status}</span>`
+            : '';
+        
+        // Get first photo URL if available
+        let photoHtml = '';
+        if (establishment.photo_urls && Array.isArray(establishment.photo_urls) && establishment.photo_urls.length > 0) {
+            const photoUrl = establishment.photo_urls[0];
+            photoHtml = `<img src="${photoUrl}" alt="${establishment.name}" class="h-16 w-16 flex-shrink-0 rounded-lg object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`;
+        }
+        
+        const emojiFallback = `<div class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100 text-2xl" style="display: ${photoHtml ? 'none' : 'flex'};">${buildListEmoji(establishment.category)}</div>`;
+
+        return `
+            <div class="flex items-start gap-3">
+                ${photoHtml || ''}
+                ${emojiFallback}
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-900">${establishment.name}</h3>
+                        ${status}
                     </div>
-                    <span class="text-sm text-gray-600">${establishment.rating || 0}</span>
-                    ${establishment.user_ratings_total ? `<span class="text-xs text-gray-500 ml-1">(${establishment.user_ratings_total})</span>` : ''}
-                </div>
-                <div class="flex items-center space-x-2">
-                    ${establishment.price_level ? `<span class="text-sm text-gray-500">${'$'.repeat(establishment.price_level)}</span>` : ''}
-                    ${establishment.is_external ? '<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">API</span>' : ''}
+                    <p class="mt-1 text-xs text-gray-500">${address}</p>
+                    <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                        <span class="flex items-center gap-1 text-orange-500">
+                            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            ${rating}
+                        </span>
+                        <span>${totalReviews} avaliações</span>
+                        <span class="capitalize">${establishment.category ?? 'categoria n/d'}</span>
                 </div>
                 </div>
             </div>
-            ${establishment.formatted_phone_number ? `<p class="text-xs text-gray-500 mb-1">📞 ${establishment.formatted_phone_number}</p>` : ''}
-            ${establishment.business_status && establishment.business_status !== 'OPERATIONAL' ? `<p class="text-xs text-red-500">⚠️ ${establishment.business_status}</p>` : ''}
         `;
-        
-        establishmentElement.addEventListener('click', () => {
-            const marker = markers.find(m => m.title === establishment.name);
-            if (marker) {
-                map.panTo(marker.getPosition());
-                showEstablishmentInfo(establishment, marker);
-            }
-        });
-        
-        listContainer.appendChild(establishmentElement);
-    });
-    
-    // Add pagination controls
-    addPaginationControls();
-}
+    }
 
-function addPaginationControls() {
-    const listContainer = document.getElementById('establishmentsList');
-    const totalPages = Math.ceil(establishments.length / establishmentsPerPage);
-    
-    if (totalPages <= 1) return;
-    
-    const paginationDiv = document.createElement('div');
-    paginationDiv.className = 'mt-4 flex justify-center items-center space-x-2';
-    
-    // Previous button
-    const prevButton = document.createElement('button');
-    prevButton.className = `px-3 py-1 rounded ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-churrasco-500 text-white hover:bg-churrasco-600'}`;
-    prevButton.textContent = 'Anterior';
-    prevButton.disabled = currentPage === 1;
-    prevButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            updateEstablishmentsList();
-        }
-    });
-    
-    // Page numbers
-    const pageInfo = document.createElement('span');
-    pageInfo.className = 'text-sm text-gray-600';
-    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-    
-    // Next button
-    const nextButton = document.createElement('button');
-    nextButton.className = `px-3 py-1 rounded ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-churrasco-500 text-white hover:bg-churrasco-600'}`;
-    nextButton.textContent = 'Próximo';
-    nextButton.disabled = currentPage === totalPages;
-    nextButton.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            updateEstablishmentsList();
-        }
-    });
-    
-    paginationDiv.appendChild(prevButton);
-    paginationDiv.appendChild(pageInfo);
-    paginationDiv.appendChild(nextButton);
-    
-    listContainer.appendChild(paginationDiv);
-}
+    function buildListEmoji(category) {
+        const emojiMap = {
+            churrascaria: '🔥',
+            'açougue': '🥩',
+            supermercado: '🛒',
+            restaurante: '🍽️',
+            bar: '🍺',
+            lanchonete: '🍔',
+        };
 
-function setupEventListeners() {
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        if (query === '') {
-            // Reset to all establishments
-            establishments = allEstablishments;
-            currentPage = 1;
-            displayEstablishments();
-        } else {
-            const filtered = allEstablishments.filter(est => 
-                est.name.toLowerCase().includes(query) || 
-                (est.address && est.address.toLowerCase().includes(query)) ||
-                (est.formatted_address && est.formatted_address.toLowerCase().includes(query))
-            );
-            establishments = filtered;
-            currentPage = 1;
-            displayEstablishments();
-        }
-    });
-    
-    // Filter functionality
-    document.getElementById('applyFilters').addEventListener('click', () => {
-        applyFilters();
-    });
-    
-    // Locate button
-    document.getElementById('locateBtn').addEventListener('click', () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                map.setCenter(userLocation);
-                map.setZoom(15);
+        return emojiMap[category] || '📍';
+    }
+
+    function debounce(callback, delay) {
+        let timer;
+        return function debounced(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => callback.apply(this, args), delay);
+        };
+    }
+
+    async function toggleFavorite(establishmentId) {
+        try {
+            const response = await fetch('{{ route('favorites.toggle') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({ establishment_id: establishmentId }),
             });
+
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
+
+            const data = await response.json();
+            showToast(data.message || 'Favorito atualizado.');
+        } catch (error) {
+            showToast('Você precisa fazer login para gerenciar favoritos.', true);
         }
-    });
-}
+    }
 
-function applyFilters() {
-    const category = document.getElementById('categoryFilter').value;
-    const priceRange = document.getElementById('priceFilter').value;
-    const minRating = document.getElementById('ratingFilter').value;
-    const amenities = Array.from(document.querySelectorAll('.amenity-filter:checked')).map(cb => cb.value);
-    
-    let filtered = allEstablishments;
-    
-    if (category) {
-        filtered = filtered.filter(est => est.category === category);
+    function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg ${isError ? 'bg-red-500 text-white' : 'bg-churrasco-500 text-white'}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
-    
-    if (priceRange) {
-        filtered = filtered.filter(est => est.price_range === priceRange);
-    }
-    
-    if (minRating) {
-        filtered = filtered.filter(est => est.rating >= parseFloat(minRating));
-    }
-    
-    if (amenities.length > 0) {
-        filtered = filtered.filter(est => 
-            amenities.every(amenity => est.amenities.includes(amenity))
-        );
-    }
-    
-    establishments = filtered;
-    currentPage = 1;
-    displayEstablishments();
-}
-
-function addToFavorites(establishmentId) {
-    // This would make an AJAX call to the backend
-    console.log('Adding to favorites:', establishmentId);
-    // For now, just show an alert
-    alert('Funcionalidade de favoritos será implementada!');
-}
-
-// Initialize map when page loads
-window.initMap = initMap;
 </script>
 
-<!-- Load Google Maps API -->
+@if(config('services.google.maps_api_key'))
 <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initMap"></script>
+@else
+<div class="bg-red-50 px-6 py-4 text-red-700">
+    Chave da API do Google Maps não configurada. Por favor, revise as variáveis de ambiente.
+</div>
+@endif
 @endsection

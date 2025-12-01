@@ -11,6 +11,18 @@ class Product extends Model
 {
     use HasFactory;
 
+    public const CATEGORIES = [
+        'carnes',
+        'temperos',
+        'acessorios',
+        'bebidas',
+        'sobremesas',
+        'vegetais',
+        'frutas',
+        'laticinios',
+        'outros',
+    ];
+
     protected $fillable = [
         'establishment_id',
         'name',

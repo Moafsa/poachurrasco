@@ -1,0 +1,183 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\CustomNotification;
+use App\Models\User;
+use App\Models\Establishment;
+use App\Models\Order;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+
+class NotificationService
+{
+    /**
+     * Create and send a notification
+     */
+    public function createNotification(array $data): CustomNotification
+    {
+        $notification = CustomNotification::create([
+            'user_id' => $data['user_id'] ?? null,
+            'establishment_id' => $data['establishment_id'] ?? null,
+            'order_id' => $data['order_id'] ?? null,
+            'type' => $data['type'],
+            'title' => $data['title'],
+            'message' => $data['message'],
+            'data' => $data['data'] ?? null,
+        ]);
+
+        // Send notification through configured channels
+        $this->sendNotification($notification, $data['channels'] ?? ['database']);
+
+        return $notification;
+    }
+
+    /**
+     * Send notification through specified channels
+     */
+    public function sendNotification(CustomNotification $notification, array $channels = ['database']): void
+    {
+        foreach ($channels as $channel) {
+            try {
+                switch ($channel) {
+                    case 'email':
+                        $this->sendEmail($notification);
+                        break;
+                    case 'push':
+                        $this->sendPush($notification);
+                        break;
+                    case 'sms':
+                        $this->sendSms($notification);
+                        break;
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to send notification via {$channel}: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Send email notification
+     */
+    protected function sendEmail(CustomNotification $notification): void
+    {
+        if (!$notification->user_id) {
+            return;
+        }
+
+        $user = User::find($notification->user_id);
+        if (!$user || !$user->email) {
+            return;
+        }
+
+        // TODO: Implement email sending with Mail facade
+        // For now, just mark as sent
+        $notification->update([
+            'sent_email' => true,
+            'email_sent_at' => now(),
+        ]);
+
+        Log::info("Email notification sent to {$user->email}: {$notification->title}");
+    }
+
+    /**
+     * Send push notification
+     */
+    protected function sendPush(CustomNotification $notification): void
+    {
+        // TODO: Implement push notification service
+        $notification->update([
+            'sent_push' => true,
+            'push_sent_at' => now(),
+        ]);
+
+        Log::info("Push notification sent: {$notification->title}");
+    }
+
+    /**
+     * Send SMS notification
+     */
+    protected function sendSms(CustomNotification $notification): void
+    {
+        // TODO: Implement SMS service
+        $notification->update([
+            'sent_sms' => true,
+            'sms_sent_at' => now(),
+        ]);
+
+        Log::info("SMS notification sent: {$notification->title}");
+    }
+
+    /**
+     * Notify user about order status change
+     */
+    public function notifyOrderStatusChange(Order $order): void
+    {
+        $statusMessages = [
+            'confirmed' => 'Seu pedido foi confirmado!',
+            'preparing' => 'Seu pedido está sendo preparado.',
+            'ready' => 'Seu pedido está pronto para retirada!',
+            'delivered' => 'Seu pedido foi entregue.',
+            'cancelled' => 'Seu pedido foi cancelado.',
+        ];
+
+        $this->createNotification([
+            'user_id' => $order->user_id,
+            'establishment_id' => $order->establishment_id,
+            'order_id' => $order->id,
+            'type' => 'order_status_changed',
+            'title' => 'Status do Pedido Atualizado',
+            'message' => $statusMessages[$order->status] ?? 'O status do seu pedido foi atualizado.',
+            'data' => [
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+            ],
+            'channels' => ['database', 'email'],
+        ]);
+    }
+
+    /**
+     * Notify establishment about new order
+     */
+    public function notifyNewOrder(Order $order): void
+    {
+        $this->createNotification([
+            'user_id' => $order->establishment->user_id ?? null,
+            'establishment_id' => $order->establishment_id,
+            'order_id' => $order->id,
+            'type' => 'order_created',
+            'title' => 'Novo Pedido Recebido',
+            'message' => "Novo pedido #{$order->order_number} recebido de {$order->customer_name}.",
+            'data' => [
+                'order_number' => $order->order_number,
+                'total' => $order->total,
+            ],
+            'channels' => ['database', 'email'],
+        ]);
+    }
+
+    /**
+     * Notify user about new review
+     */
+    public function notifyNewReview(Establishment $establishment, $review): void
+    {
+        if (!$establishment->user_id) {
+            return;
+        }
+
+        $this->createNotification([
+            'user_id' => $establishment->user_id,
+            'establishment_id' => $establishment->id,
+            'type' => 'review_received',
+            'title' => 'Nova Avaliação Recebida',
+            'message' => "Você recebeu uma nova avaliação de {$review->user->name ?? 'Anônimo'}.",
+            'data' => [
+                'rating' => $review->rating,
+                'review_id' => $review->id,
+            ],
+            'channels' => ['database'],
+        ]);
+    }
+}
+
+

@@ -15,6 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Create super admin user (only if doesn't exist)
+        User::firstOrCreate(
+            ['email' => 'admin@poachurras.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => bcrypt('admin123'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
         // Create test users (only if they don't exist)
         User::firstOrCreate(
             ['email' => 'test@example.com'],

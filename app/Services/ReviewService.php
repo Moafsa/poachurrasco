@@ -257,7 +257,7 @@ class ReviewService
     /**
      * Bulk sync external reviews for multiple establishments
      */
-    public function bulkSyncExternalReviews($establishments)
+    public function bulkSyncExternalReviews($establishments, $useQueue = true)
     {
         $results = [
             'total' => count($establishments),
@@ -267,25 +267,40 @@ class ReviewService
         ];
         
         foreach ($establishments as $establishment) {
-            $result = $this->syncExternalReviews($establishment);
-            
-            if ($result !== false) {
+            if ($useQueue) {
+                // Dispatch job for async processing
+                \App\Jobs\SyncExternalReviewsJob::dispatch($establishment);
                 $results['successful']++;
                 $results['details'][] = [
                     'establishment_id' => $establishment->id,
                     'name' => $establishment->name,
-                    'result' => $result
+                    'queued' => true
                 ];
             } else {
-                $results['failed']++;
-                $results['details'][] = [
-                    'establishment_id' => $establishment->id,
-                    'name' => $establishment->name,
-                    'error' => 'Failed to sync reviews'
-                ];
+                // Process synchronously
+                $result = $this->syncExternalReviews($establishment);
+                
+                if ($result !== false) {
+                    $results['successful']++;
+                    $results['details'][] = [
+                        'establishment_id' => $establishment->id,
+                        'name' => $establishment->name,
+                        'result' => $result
+                    ];
+                } else {
+                    $results['failed']++;
+                    $results['details'][] = [
+                        'establishment_id' => $establishment->id,
+                        'name' => $establishment->name,
+                        'error' => 'Failed to sync reviews'
+                    ];
+                }
             }
         }
         
         return $results;
     }
 }
+
+
+

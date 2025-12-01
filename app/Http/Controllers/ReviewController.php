@@ -13,23 +13,46 @@ class ReviewController extends Controller
     /**
      * Get combined reviews for an establishment (internal + external)
      */
-    public function getCombinedReviews(Establishment $establishment)
+    public function getCombinedReviews($id)
     {
+        // Accept ID (numeric) or slug
+        $establishment = Establishment::where('id', $id)
+            ->orWhere('slug', $id)
+            ->firstOrFail();
+        
+        $page = request()->get('page', 1);
+        $perPage = 10;
+        
         $reviewService = app(ReviewService::class);
-        $reviews = $reviewService->getCombinedReviews($establishment, 20);
+        $allReviews = $reviewService->getCombinedReviews($establishment, 100); // Get more to paginate
+        
+        // Paginate manually
+        $total = count($allReviews);
+        $offset = ($page - 1) * $perPage;
+        $reviews = array_slice($allReviews, $offset, $perPage);
+        
         $overallRating = $reviewService->getOverallRating($establishment);
         
         return response()->json([
             'reviews' => $reviews,
-            'overall_rating' => $overallRating
+            'overall_rating' => $overallRating,
+            'current_page' => (int) $page,
+            'total' => $total,
+            'per_page' => $perPage,
+            'has_more' => ($offset + $perPage) < $total
         ]);
     }
     
     /**
      * Sync external reviews for an establishment
      */
-    public function syncExternalReviews(Establishment $establishment)
+    public function syncExternalReviews($id)
     {
+        // Accept ID (numeric) or slug
+        $establishment = Establishment::where('id', $id)
+            ->orWhere('slug', $id)
+            ->firstOrFail();
+        
         $reviewService = app(ReviewService::class);
         $result = $reviewService->syncExternalReviews($establishment);
         

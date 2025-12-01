@@ -80,3 +80,16 @@ echo.
 echo 📚 Documentação: DEPLOY_AVALIACOES_INTEGRADAS.md
 
 pause
+
+
+
+
+
+
+
+
+
+
+
+
+

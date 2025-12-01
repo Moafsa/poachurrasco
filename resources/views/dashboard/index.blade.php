@@ -102,7 +102,7 @@
         <!-- Quick Actions -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
             <h2 class="text-xl font-bold text-gray-900 mb-6">Ações Rápidas</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <a href="{{ route('establishments.create') }}" class="flex items-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
                     <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,6 +149,35 @@
                         <div class="font-semibold">Nova Receita</div>
                         <div class="text-sm opacity-90">Compartilhar receita</div>
                     </div>
+                </a>
+
+                <a href="{{ route('products.analytics') }}" class="flex items-center p-4 bg-gradient-to-r from-slate-500 to-slate-600 text-white rounded-xl hover:from-slate-600 hover:to-slate-700 transition-all duration-300 transform hover:scale-105">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3v18m8-8H4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="font-semibold">Product Analytics</div>
+                        <div class="text-sm opacity-90">Monitor stock and sales</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- System Settings Link -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Configurações do Sistema</h2>
+                    <p class="text-sm text-gray-600">Gerencie configurações gerais da plataforma, incluindo exibição de estabelecimentos externos</p>
+                </div>
+                <a href="{{ route('dashboard.system-settings') }}" class="inline-flex items-center px-6 py-3 bg-churrasco-500 text-white rounded-lg hover:bg-churrasco-600 transition-colors duration-200 font-semibold">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Configurações
                 </a>
             </div>
         </div>

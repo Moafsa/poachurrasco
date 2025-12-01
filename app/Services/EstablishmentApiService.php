@@ -219,7 +219,7 @@ class EstablishmentApiService
             try {
                 $response = Http::get(self::GOOGLE_PLACES_API_URL . '/details/json', [
                     'place_id' => $placeId,
-                    'fields' => 'name,formatted_address,formatted_phone_number,international_phone_number,opening_hours,website,photos,reviews,rating,user_ratings_total,price_level,types,business_status',
+                    'fields' => 'name,formatted_address,formatted_phone_number,international_phone_number,opening_hours,website,photos,reviews,rating,user_ratings_total,price_level,types,business_status,geometry',
                     'key' => $this->googleApiKey,
                 ]);
                 
@@ -246,7 +246,16 @@ class EstablishmentApiService
         
         foreach ($establishments as $rawEstablishmentData) {
             try {
-                // Process the raw data first
+                // If we don't have geometry data, fetch place details
+                if (!isset($rawEstablishmentData['geometry']['location']) && isset($rawEstablishmentData['place_id'])) {
+                    $placeDetails = $this->getPlaceDetails($rawEstablishmentData['place_id']);
+                    if ($placeDetails) {
+                        // Merge place details with raw data
+                        $rawEstablishmentData = array_merge($rawEstablishmentData, $placeDetails);
+                    }
+                }
+                
+                // Process the raw data
                 $establishmentData = $this->processGooglePlaceData($rawEstablishmentData);
                 
                 $existing = Establishment::where('external_id', $establishmentData['external_id'])

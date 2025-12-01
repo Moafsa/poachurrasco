@@ -29,14 +29,25 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Definir diretório de trabalho
 WORKDIR /var/www
 
-# Copiar código da aplicação
-COPY . /var/www
+# Copiar arquivos de configuração primeiro
+COPY composer.json composer.lock package.json package-lock.json ./
+COPY vite.config.js tailwind.config.js postcss.config.js ./
+
+# Copiar recursos necessários para o build
+COPY resources ./resources
+COPY public ./public
 
 # Instalar dependências PHP
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader
 
 # Instalar dependências Node.js e compilar assets
-RUN npm install && npm run build
+RUN npm ci && npm run build
+
+# Copiar código da aplicação (agora sem node_modules e vendor)
+COPY . /var/www
+
+# Completar instalação do Composer
+RUN composer dump-autoload --optimize
 
 # Definir permissões
 RUN chown -R www-data:www-data /var/www
@@ -72,7 +83,7 @@ RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 RUN mkdir -p /var/log/nginx
 
 # Script final de inicialização com Nginx
-RUN echo '#!/bin/bash\nset -e\n\necho "=== Starting Services ==="\n\n# Start cron\nservice cron start\n\n# Create nginx log files\nmkdir -p /var/log/nginx\ntouch /var/log/nginx/error.log /var/log/nginx/access.log\n\n# Start nginx in background\nnginx\n\necho "=== Laravel Application Startup ==="\n\necho "Waiting for database..."\nwhile ! nc -z ${DB_HOST:-db} 5432; do\n  sleep 1\ndone\necho "Database is ready!"\n\necho "=== RUNNING MIGRATIONS ==="\necho "Clearing config cache first..."\nphp artisan config:clear || true\necho "Running fresh migrations..."\nphp artisan migrate:fresh --force\necho "Migrations completed!"\n\necho "=== OPTIMIZING CACHE ==="\nphp artisan config:cache\nphp artisan route:cache\nphp artisan view:cache\necho "Cache optimized!"\n\nif [ ! -z "$GOOGLE_PLACES_API_KEY" ]; then\n  echo "=== SYNCING EXTERNAL REVIEWS ==="\n  php artisan reviews:sync-external --limit=10 --force\n  echo "External reviews synced!"\nelse\n  echo "Google Places API key not configured - skipping external reviews sync"\nfi\n\necho "=== APPLICATION READY ==="\necho "Starting PHP-FPM..."\nexec php-fpm' > /usr/local/bin/start.sh
+RUN echo '#!/bin/bash\nset -e\n\necho "=== Starting Services ==="\n\n# Start cron\nservice cron start\n\n# Create nginx log files\nmkdir -p /var/log/nginx\ntouch /var/log/nginx/error.log /var/log/nginx/access.log\n\n# Start nginx in background and keep it running\nnginx -g "daemon off;" &\nNGINX_PID=$!\n\n# Function to cleanup on exit\ntrap "echo \"Stopping services...\"; kill $NGINX_PID 2>/dev/null || true; exit" SIGTERM SIGINT\n\necho "=== Laravel Application Startup ==="\n\necho "Waiting for database..."\nwhile ! nc -z ${DB_HOST:-db} 5432; do\n  sleep 1\ndone\necho "Database is ready!"\n\necho "=== CHECKING DATABASE STATUS ==="\necho "Skipping migrations check to avoid duplicate table errors..."\necho "Database is ready, proceeding with application startup..."\n\necho "=== OPTIMIZING CACHE ==="\nphp artisan config:cache || true\nphp artisan route:cache || true\nphp artisan view:cache || true\necho "Cache optimized!"\n\nif [ ! -z "$GOOGLE_PLACES_API_KEY" ]; then\n  echo "=== SYNCING EXTERNAL REVIEWS ==="\n  php artisan reviews:sync-external --limit=10 --force || true\n  echo "External reviews synced!"\nelse\n  echo "Google Places API key not configured - skipping external reviews sync"\nfi\n\necho "=== APPLICATION READY ==="\necho "Nginx PID: $NGINX_PID"\necho "Starting PHP-FPM..."\n\n# Start PHP-FPM in foreground to keep container alive\nphp-fpm' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
 

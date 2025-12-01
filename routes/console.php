@@ -8,14 +8,20 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Schedule periodic establishment synchronization
+// Schedule periodic establishment synchronization (daily)
 Schedule::command('establishments:sync')
-    ->hourly()
+    ->daily()
     ->withoutOverlapping()
     ->runInBackground();
 
-// Schedule refresh of existing establishments data
+// Schedule refresh of existing establishments data (daily at different time)
 Schedule::command('establishments:sync --refresh')
-    ->daily()
+    ->dailyAt('02:00')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+// Schedule external reviews synchronization (daily)
+Schedule::command('reviews:sync-external --limit=100')
+    ->dailyAt('03:00')
     ->withoutOverlapping()
     ->runInBackground();

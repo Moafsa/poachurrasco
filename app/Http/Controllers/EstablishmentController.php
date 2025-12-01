@@ -9,6 +9,7 @@ use App\Jobs\ProcessEstablishmentJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class EstablishmentController extends Controller
 {
@@ -210,27 +211,116 @@ class EstablishmentController extends Controller
     /**
      * Proxy para servir imagens da Google Places API
      */
-    public function proxyPhoto($id)
+    public function proxyPhoto($id, $index = 0)
     {
         $establishment = Establishment::findOrFail($id);
         
         if (!$establishment->photo_urls || count($establishment->photo_urls) === 0) {
-            return response()->file(public_path('images/placeholder.jpg'));
+            Log::warning('No photo URLs for establishment', ['id' => $id]);
+            return $this->getPlaceholderImage();
+        }
+        
+        $index = (int) $index;
+        if ($index < 0 || $index >= count($establishment->photo_urls)) {
+            $index = 0;
         }
         
         try {
-            $photoUrl = $establishment->photo_urls[0];
-            $image = file_get_contents($photoUrl);
+            $photoUrl = $establishment->photo_urls[$index];
             
-            if ($image === false) {
-                return response()->file(public_path('images/placeholder.jpg'));
+            if (empty($photoUrl)) {
+                Log::warning('Empty photo URL', ['id' => $id, 'index' => $index]);
+                return $this->getPlaceholderImage();
             }
             
-            return response($image, 200)->header('Content-Type', 'image/jpeg');
+            Log::info('Fetching photo', [
+                'id' => $id,
+                'index' => $index,
+                'url' => substr($photoUrl, 0, 100) . '...'
+            ]);
+            
+            // Use HTTP client with proper user agent and headers
+            $response = Http::timeout(15)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept' => 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Referer' => url('/'),
+                ])
+                ->get($photoUrl);
+            
+            if ($response->successful()) {
+                $contentType = $response->header('Content-Type') ?? 'image/jpeg';
+                $imageData = $response->body();
+                
+                // Check if response is actually an image (not HTML error page)
+                if (empty($imageData) || strpos($imageData, '<!DOCTYPE') !== false || strpos($imageData, '<html') !== false) {
+                    Log::warning('Invalid image data received (HTML instead of image)', [
+                        'id' => $id, 
+                        'index' => $index,
+                        'content_type' => $contentType,
+                        'first_bytes' => substr($imageData, 0, 100)
+                    ]);
+                    return $this->getPlaceholderImage();
+                }
+                
+                // Verify it's actually image data
+                $imageInfo = @getimagesizefromstring($imageData);
+                if ($imageInfo === false) {
+                    Log::warning('Invalid image format received', ['id' => $id, 'index' => $index]);
+                    return $this->getPlaceholderImage();
+                }
+                
+                Log::info('Photo fetched successfully', [
+                    'id' => $id,
+                    'index' => $index,
+                    'size' => strlen($imageData),
+                    'content_type' => $contentType,
+                    'image_width' => $imageInfo[0] ?? null,
+                    'image_height' => $imageInfo[1] ?? null
+                ]);
+                
+                return response($imageData, 200)
+                    ->header('Content-Type', $contentType)
+                    ->header('Cache-Control', 'public, max-age=3600')
+                    ->header('Content-Length', strlen($imageData))
+                    ->header('X-Content-Type-Options', 'nosniff');
+            }
+            
+            Log::warning('Failed to fetch photo', [
+                'id' => $id,
+                'index' => $index,
+                'status' => $response->status()
+            ]);
+            
+            return $this->getPlaceholderImage();
         } catch (\Exception $e) {
-            Log::error('Error proxying photo: ' . $e->getMessage());
-            return response()->file(public_path('images/placeholder.jpg'));
+            Log::error('Error proxying photo: ' . $e->getMessage(), [
+                'establishment_id' => $id,
+                'photo_index' => $index,
+                'photo_url' => $establishment->photo_urls[$index] ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->getPlaceholderImage();
         }
+    }
+    
+    /**
+     * Get placeholder image response
+     */
+    private function getPlaceholderImage()
+    {
+        $placeholderPath = public_path('images/placeholder.jpg');
+        if (file_exists($placeholderPath)) {
+            return response()->file($placeholderPath);
+        }
+        
+        // Return a simple SVG placeholder if GD is not available
+        $svg = '<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="300" fill="#f97316"/>
+            <text x="50%" y="50%" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">Sem Imagem</text>
+        </svg>';
+        
+        return response($svg, 200)->header('Content-Type', 'image/svg+xml');
     }
 
     /**
@@ -344,17 +434,61 @@ class EstablishmentController extends Controller
      */
     public function mapData(Request $request)
     {
-        $query = Establishment::active();
-        
-        // Include both user-created and external establishments
-        if ($request->has('include_external') && $request->include_external) {
-            // Include all active establishments
+        $isDashboardContext = $request->routeIs('establishments.map.data');
+
+        if ($isDashboardContext && auth()->check()) {
+            // Dashboard context: only user's active establishments
+            $query = Establishment::active()->where('user_id', auth()->id());
         } else {
-            $query->where('user_id', auth()->id());
+            // Public context: include external establishments based on system settings
+            try {
+                $showExternal = \App\Models\SystemSetting::showExternalEstablishments();
+            } catch (\Exception $e) {
+                // Fallback if SystemSetting model is not available
+                $showExternal = true;
+            }
+            $includeExternal = $request->boolean('include_external', $showExternal);
+            
+            $query = Establishment::where(function ($q) use ($includeExternal) {
+                // Include active user-created establishments
+                $q->where(function ($subQ) {
+                    $subQ->where('status', 'active')
+                         ->whereNotNull('user_id');
+                });
+                
+                // Include external establishments if requested and enabled in settings
+                if ($includeExternal) {
+                    $q->orWhere('is_external', true);
+                }
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($builder) use ($search) {
+                $builder->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('formatted_address', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%");
+            });
         }
 
         if ($request->has('category')) {
             $query->byCategory($request->category);
+        }
+
+        if ($request->filled('rating_min')) {
+            $query->where('rating', '>=', (float) $request->input('rating_min'));
+        }
+
+        if ($request->filled('price_level')) {
+            $query->where('price_level', (int) $request->input('price_level'));
+        }
+
+        if ($request->filled('amenities') && is_array($request->amenities)) {
+            foreach ($request->amenities as $amenity) {
+                $query->whereJsonContains('amenities', $amenity);
+            }
         }
 
         // Handle proximity search
@@ -363,7 +497,7 @@ class EstablishmentController extends Controller
             $longitude = $request->longitude;
             $radius = $request->get('radius', 10);
             
-            $query->selectRaw("id, name, address, formatted_address, latitude, longitude, category, rating, is_external, is_merged, external_source, user_ratings_total, formatted_phone_number, business_status, price_level, photos, photo_urls,
+            $query->selectRaw("id, name, slug, address, formatted_address, latitude, longitude, category, rating, is_external, is_merged, external_source, user_ratings_total, formatted_phone_number, business_status, price_level, photos, photo_urls,
                 (6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance",
                 [$latitude, $longitude, $latitude])
                 ->whereRaw("(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) < ?",
@@ -372,7 +506,7 @@ class EstablishmentController extends Controller
                     [$latitude, $longitude, $latitude]);
         } else {
             $query->select([
-                'id', 'name', 'address', 'formatted_address', 'latitude', 'longitude', 'category', 
+                'id', 'name', 'slug', 'address', 'formatted_address', 'latitude', 'longitude', 'category', 
                 'rating', 'is_external', 'is_merged', 'external_source', 'user_ratings_total', 
                 'formatted_phone_number', 'business_status', 'price_level', 'photos', 'photo_urls'
             ]);
