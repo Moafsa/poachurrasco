@@ -576,6 +576,53 @@ return new class extends Migration
                 $table->index('key');
             });
         }
+
+        // Site Contents table
+        if (!Schema::hasTable('site_contents')) {
+            Schema::create('site_contents', function (Blueprint $table) {
+                $table->id();
+                $table->string('key')->unique();
+                $table->string('label');
+                $table->text('content')->nullable();
+                $table->string('type')->default('text'); // text, html, image, etc.
+                $table->string('page')->nullable(); // home, about, contact, etc.
+                $table->string('section')->nullable(); // hero, footer, etc.
+                $table->json('metadata')->nullable(); // Additional data
+                $table->timestamps();
+            });
+        }
+
+        // Hero Sections table
+        if (!Schema::hasTable('hero_sections')) {
+            Schema::create('hero_sections', function (Blueprint $table) {
+                $table->id();
+                $table->string('page')->unique(); // home, about, contact, etc.
+                $table->string('type')->default('image'); // image, video, slideshow
+                $table->string('title')->nullable();
+                $table->text('subtitle')->nullable();
+                $table->string('primary_button_text')->nullable();
+                $table->string('primary_button_link')->nullable();
+                $table->string('secondary_button_text')->nullable();
+                $table->string('secondary_button_link')->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->integer('display_order')->default(0);
+                $table->json('settings')->nullable(); // Additional settings like autoplay, loop, etc.
+                $table->timestamps();
+            });
+
+            Schema::create('hero_media', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('hero_section_id')->constrained()->onDelete('cascade');
+                $table->string('type'); // image, video
+                $table->string('media_path'); // Path to the file
+                $table->string('mime_type')->nullable();
+                $table->integer('file_size')->nullable();
+                $table->integer('display_order')->default(0);
+                $table->string('alt_text')->nullable();
+                $table->json('metadata')->nullable(); // Width, height, duration, etc.
+                $table->timestamps();
+            });
+        }
     }
 
     /**
@@ -583,6 +630,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('hero_media');
+        Schema::dropIfExists('hero_sections');
+        Schema::dropIfExists('site_contents');
         Schema::dropIfExists('system_settings');
         Schema::dropIfExists('bbq_chats');
         Schema::dropIfExists('bbq_guides');

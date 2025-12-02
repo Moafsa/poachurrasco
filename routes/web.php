@@ -18,6 +18,7 @@ use App\Http\Controllers\BbqPortalController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\SuperAdminController;
 use App\Models\User;
 
 // Public routes
@@ -55,30 +56,109 @@ Route::get('/servicos', [PublicSiteController::class, 'services'])->name('servic
 
 // Auth routes
 Route::get('/login', function () {
-    return view('auth.login');
+    try {
+        // Try simple view first for testing
+        if (request()->get('simple')) {
+            return view('auth.login-simple');
+        }
+        return view('auth.login');
+    } catch (\Throwable $e) {
+        \Log::error('Login view error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        if (config('app.debug')) {
+            return response('Error loading login page: ' . $e->getMessage() . '<br><br>File: ' . $e->getFile() . ':' . $e->getLine() . '<br><br><pre>' . $e->getTraceAsString() . '</pre>', 500);
+        }
+        return response('Error loading login page. Check logs for details.', 500);
+    }
 })->name('login')->middleware('guest');
 
 Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required'],
-    ]);
-
-    $remember = $request->boolean('remember');
-
-    if (! Auth::attempt([
-        'email' => $credentials['email'],
-        'password' => $credentials['password'],
-        'is_active' => true,
-    ], $remember)) {
-        throw ValidationException::withMessages([
-            'email' => 'Invalid credentials provided.',
+    \Log::info('Login POST request received', ['email' => $request->email]);
+    
+    try {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
+
+        \Log::info('Credentials validated');
+
+        $remember = $request->boolean('remember');
+
+        \Log::info('Attempting auth', ['email' => $credentials['email']]);
+
+        if (! Auth::attempt([
+            'email' => $credentials['email'],
+            'password' => $credentials['password'],
+            'is_active' => true,
+        ], $remember)) {
+            \Log::warning('Auth attempt failed', ['email' => $credentials['email']]);
+            throw ValidationException::withMessages([
+                'email' => 'Invalid credentials provided.',
+            ]);
+        }
+
+        \Log::info('Auth successful');
+
+        try {
+            $request->session()->regenerate();
+            \Log::info('Session regenerated');
+        } catch (\Throwable $e) {
+            \Log::error('Session regenerate error: ' . $e->getMessage());
+            throw $e;
+        }
+
+        try {
+            $user = Auth::user();
+            \Log::info('Redirecting user', ['role' => $user->role ?? 'none']);
+            
+            // Redirect admin users to super-admin dashboard
+            if ($user && $user->isAdmin()) {
+                \Log::info('Redirecting admin to super-admin dashboard');
+                return redirect()->intended(route('super-admin.index'));
+            }
+            
+            \Log::info('Redirecting to dashboard');
+            return redirect()->intended(route('dashboard'));
+        } catch (\Throwable $e) {
+            \Log::error('Redirect error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+            
+            // Fallback: check if user is admin
+            $user = Auth::user();
+            if ($user && $user->isAdmin()) {
+                return redirect('/super-admin');
+            }
+            
+            return redirect('/dashboard');
+        }
+    } catch (ValidationException $e) {
+        \Log::info('Validation exception thrown');
+        throw $e;
+    } catch (\Throwable $e) {
+        \Log::error('Login POST error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+        \Log::error('Stack trace: ' . $e->getTraceAsString());
+        
+        // Check if error is related to password hash
+        $userEmail = $request->input('email', 'unknown');
+        if (str_contains($e->getMessage(), 'Bcrypt algorithm') || str_contains($e->getMessage(), 'password does not use')) {
+            \Log::warning('Password hash issue detected for user: ' . $userEmail);
+            
+            if (config('app.debug')) {
+                return back()->withErrors([
+                    'email' => 'Password format error. Please run: php artisan users:fix-passwords --email=' . $userEmail . ' --password=yourpassword'
+                ])->withInput();
+            }
+            
+            return back()->withErrors([
+                'email' => 'There was a problem with your account. Please contact the administrator.'
+            ])->withInput();
+        }
+        
+        if (config('app.debug')) {
+            return response('Error processing login: ' . $e->getMessage() . '<br><br>File: ' . $e->getFile() . ':' . $e->getLine() . '<br><br><pre>' . $e->getTraceAsString() . '</pre>', 500)->header('Content-Type', 'text/html');
+        }
+        return back()->withErrors(['email' => 'An error occurred. Please try again.'])->withInput();
     }
-
-    $request->session()->regenerate();
-
-    return redirect()->intended(route('dashboard'));
 })->name('login.post')->middleware('guest');
 
 Route::get('/register', function () {
@@ -195,4 +275,27 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/api/system-settings', [SystemSettingsController::class, 'getSettings'])->name('api.system-settings');
     
     // Add other dashboard routes here
+});
+
+// Super Admin routes (protected by admin middleware)
+Route::middleware(['auth', 'admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::get('/', [SuperAdminController::class, 'index'])->name('index');
+    
+    // Site Content routes
+    Route::get('/content', [SuperAdminController::class, 'content'])->name('content');
+    Route::post('/content', [SuperAdminController::class, 'storeContent'])->name('content.store');
+    Route::delete('/content/{content}', [SuperAdminController::class, 'deleteContent'])->name('content.delete');
+    
+    // Hero Section routes
+    Route::get('/hero-sections', [SuperAdminController::class, 'heroSections'])->name('hero-sections');
+    Route::get('/hero-section/create', [SuperAdminController::class, 'heroSectionForm'])->name('hero-section.create');
+    Route::get('/hero-section/{heroSection}/edit', [SuperAdminController::class, 'heroSectionForm'])->name('hero-section.edit');
+    Route::post('/hero-section', [SuperAdminController::class, 'storeHeroSection'])->name('hero-section.store');
+    Route::put('/hero-section/{heroSection}', [SuperAdminController::class, 'storeHeroSection'])->name('hero-section.update');
+    Route::delete('/hero-section/{heroSection}', [SuperAdminController::class, 'deleteHeroSection'])->name('hero-section.delete');
+    
+    // Hero Media routes
+    Route::post('/hero-section/{heroSection}/upload-media', [SuperAdminController::class, 'uploadHeroMedia'])->name('hero-section.upload-media');
+    Route::delete('/hero-section/media/{media}', [SuperAdminController::class, 'deleteHeroMedia'])->name('hero-section.delete-media');
+    Route::post('/hero-section/{heroSection}/update-media-order', [SuperAdminController::class, 'updateHeroMediaOrder'])->name('hero-section.update-media-order');
 });

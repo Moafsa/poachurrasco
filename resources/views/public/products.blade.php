@@ -9,36 +9,36 @@
 @endphp
 <div class="min-h-screen bg-gray-50">
     <!-- Hero Section -->
-    <div class="bg-gradient-to-br from-orange-600 via-red-700 to-orange-800 text-white py-16">
-        <div class="mx-auto max-w-7xl px-4 text-center">
-                <h1 class="text-4xl lg:text-6xl font-black mb-6">Marketplace</h1>
-                <p class="text-xl lg:text-2xl text-orange-100 max-w-3xl mx-auto">
+    <div class="bg-gradient-to-br from-orange-600 via-red-700 to-orange-800 text-white py-8 sm:py-12 md:py-16">
+        <div class="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 text-center">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6">Marketplace</h1>
+                <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-orange-100 max-w-3xl mx-auto px-2">
                 Encontre os melhores produtos de churrasco diretamente dos produtores gaúchos
                 </p>
         </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white shadow-sm sticky top-20 z-40 border-b">
-        <div class="mx-auto max-w-7xl px-4 py-6">
-            <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="bg-white shadow-sm sticky top-16 sm:top-20 z-40 border-b">
+        <div class="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+            <div class="flex flex-col gap-4">
                 <!-- Category Filters -->
                 <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('products') }}" class="{{ empty($selectedCategory) ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700' }} px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 hover:text-white transition-colors duration-200">
+                    <a href="{{ route('products') }}" class="{{ empty($selectedCategory) ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700' }} px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-orange-600 hover:text-white transition-colors duration-200">
                         Todos
                     </a>
                     @foreach ($categories as $category)
                         <a href="{{ route('products', array_filter(['category' => $category, 'sort' => $selectedSort !== 'popular' ? $selectedSort : null])) }}"
-                           class="{{ $selectedCategory === $category ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700' }} px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 hover:text-white transition-colors duration-200">
+                           class="{{ $selectedCategory === $category ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700' }} px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-orange-600 hover:text-white transition-colors duration-200">
                             {{ ucfirst($category) }}
                         </a>
                     @endforeach
                 </div>
                 <!-- Sort Options -->
-                <form method="GET" class="flex items-center space-x-4">
+                <form method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <input type="hidden" name="category" value="{{ $selectedCategory }}">
-                    <span class="text-sm text-gray-600">Ordenar por:</span>
-                    <select name="sort" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" onchange="this.form.submit()">
+                    <span class="text-xs sm:text-sm text-gray-600">Ordenar por:</span>
+                    <select name="sort" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500" onchange="this.form.submit()">
                         <option value="popular" @selected($selectedSort === 'popular')>Mais Popular</option>
                         <option value="price-low" @selected($selectedSort === 'price-low')>Menor Preço</option>
                         <option value="price-high" @selected($selectedSort === 'price-high')>Maior Preço</option>
@@ -51,9 +51,9 @@
     </div>
 
     <!-- Products Grid -->
-    <div class="mx-auto max-w-7xl px-4 py-12">
+    <div class="mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-8 sm:py-12">
         @if($products->count() > 0)
-                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 @foreach($products as $product)
                     <article class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                         <div class="relative h-48 bg-gradient-to-br from-orange-200 to-red-300">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PublicSite;
 
 use App\Http\Controllers\Controller;
 use App\Models\Establishment;
+use App\Models\HeroSection;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\Service;
@@ -26,6 +27,7 @@ class PublicSiteController extends Controller
             $showExternal = true;
         }
         
+        // First, get featured establishments (user-created + external if enabled)
         $featuredQuery = Establishment::query()
             ->where(function ($q) use ($showExternal) {
                 // Include active user-created establishments
@@ -44,10 +46,92 @@ class PublicSiteController extends Controller
                 }
             })
             ->with(['products' => fn ($query) => $query->active()->take(3)])
-            ->orderByDesc('rating')
-            ->take(6);
+            ->orderByDesc('rating');
         
         $featuredEstablishments = $featuredQuery->get();
+        
+        // If we don't have 6 establishments, complement with external non-featured establishments
+        // Priority: external churrascarias with photos > external churrascarias without photos > other external with photos > others
+        $targetCount = 6;
+        if ($featuredEstablishments->count() < $targetCount && $showExternal) {
+            $remainingCount = $targetCount - $featuredEstablishments->count();
+            $externalIds = $featuredEstablishments->pluck('id')->toArray();
+            
+            // Get all potential external establishments with products relationship
+            $allExternals = Establishment::query()
+                ->where('is_external', true)
+                ->whereNotIn('id', $externalIds)
+                ->whereNotNull('rating')
+                ->with(['products' => fn ($query) => $query->active()->take(3)])
+                ->get();
+            
+            // Helper function to check if establishment has photos
+            $hasPhotos = function ($est) {
+                return !empty($est->photo_urls) && is_array($est->photo_urls) && count($est->photo_urls) > 0;
+            };
+            
+            // Helper function to calculate priority score for sorting
+            $calculatePriority = function ($est) use ($hasPhotos) {
+                $priority = 0;
+                $hasPhoto = $hasPhotos($est);
+                
+                // Higher priority numbers = higher priority
+                // Priority order: 1) Churrascarias with photos, 2) Churrascarias without photos, 
+                // 3) Others with photos, 4) Others without photos
+                if ($est->category === 'churrascaria' && $hasPhoto) {
+                    $priority = 4000; // Highest priority
+                } elseif ($est->category === 'churrascaria' && !$hasPhoto) {
+                    $priority = 3000;
+                } elseif ($hasPhoto) {
+                    $priority = 2000;
+                } else {
+                    $priority = 1000;
+                }
+                
+                // Add rating and review count to priority score for fine-tuning
+                $priority += ($est->rating ?? 0) * 100;
+                $priority += ($est->user_ratings_total ?? 0) * 0.1;
+                
+                return $priority;
+            };
+            
+            // Separate and prioritize by creating a sorted collection
+            $prioritized = $allExternals->map(function ($est) use ($calculatePriority) {
+                return [
+                    'establishment' => $est,
+                    'priority' => $calculatePriority($est),
+                ];
+            })
+            ->filter(function ($item) {
+                // Only include establishments with rating >= 3.0 initially
+                return ($item['establishment']->rating ?? 0) >= 3.0;
+            })
+            ->sortByDesc('priority')
+            ->map(function ($item) {
+                return $item['establishment'];
+            });
+            
+            $additionalExternals = $prioritized->take($remainingCount);
+            
+            // If we still don't have enough, get any external establishments with rating >= 2.0
+            if ($additionalExternals->count() < $remainingCount) {
+                $stillNeeded = $remainingCount - $additionalExternals->count();
+                $alreadyIncludedIds = $additionalExternals->pluck('id')->toArray();
+                
+                $moreExternals = $allExternals
+                    ->filter(function ($est) use ($alreadyIncludedIds) {
+                        return !in_array($est->id, $alreadyIncludedIds) && ($est->rating ?? 0) >= 2.0;
+                    })
+                    ->sortByDesc($calculatePriority)
+                    ->take($stillNeeded);
+                
+                $additionalExternals = $additionalExternals->merge($moreExternals);
+            }
+            
+            $featuredEstablishments = $featuredEstablishments->merge($additionalExternals)->take($targetCount);
+        } else {
+            $featuredEstablishments = $featuredEstablishments->take($targetCount);
+        }
 
         $highlightProducts = Product::with('establishment')
             ->active()
@@ -87,12 +171,26 @@ class PublicSiteController extends Controller
             'products_count' => Product::active()->count(),
         ];
 
+        // Get hero section for home page with media loaded
+        try {
+            $heroSection = HeroSection::where('page', 'home')
+                ->where('is_active', true)
+                ->with('media')
+                ->orderBy('display_order')
+                ->first();
+        } catch (\Exception $e) {
+            // If there's an error (e.g., table doesn't exist), set to null
+            Log::warning('Error loading hero section: ' . $e->getMessage());
+            $heroSection = null;
+        }
+
         return view('public.home', [
             'metrics' => $metrics,
             'featuredEstablishments' => $featuredEstablishments,
             'highlightProducts' => $highlightProducts,
             'highlightPromotions' => $highlightPromotions,
             'highlightServices' => $highlightServices,
+            'heroSection' => $heroSection,
         ]);
     }
 
@@ -101,13 +199,18 @@ class PublicSiteController extends Controller
      */
     public function map()
     {
-        $categories = Establishment::query()
-            ->select('category')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category')
-            ->filter()
-            ->values();
+        try {
+            $categories = Establishment::query()
+                ->select('category')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category')
+                ->filter()
+                ->values();
+        } catch (\Exception $e) {
+            Log::error('Error fetching categories for map: ' . $e->getMessage());
+            $categories = collect();
+        }
 
         return view('public.mapa', compact('categories'));
     }

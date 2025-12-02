@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'POA Capital do Churrasco'),
+    'name' => env('APP_NAME', 'Porto Alegre Capital Mundial do Churrasco'),
 
     /*
     |--------------------------------------------------------------------------

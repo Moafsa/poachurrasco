@@ -93,17 +93,18 @@
                 </div>
 
                 <!-- Photo Gallery -->
-                @if($establishment->photo_urls && count($establishment->photo_urls) > 1)
+                @if($establishment->photo_urls && count($establishment->photo_urls) > 0)
                 <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-8">
                     <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Galeria de Fotos</h2>
                     <div class="space-y-4 sm:space-y-6">
                         @foreach($establishment->photo_urls as $index => $photoUrl)
-                            <div class="relative rounded-xl overflow-hidden shadow-lg bg-gray-100 w-full">
+                            <div class="relative rounded-xl overflow-hidden shadow-lg bg-gray-100 w-full hover:opacity-90 transition-opacity">
                                 <img src="{{ route('establishment.photo.proxy', ['id' => $establishment->id, 'index' => $index]) }}" 
                                      alt="{{ $establishment->name }} - Foto {{ $index + 1 }}" 
-                                     class="w-full h-auto object-cover block"
+                                     class="w-full h-auto object-cover block cursor-pointer"
                                      style="min-height: 200px; max-height: 400px; width: 100%; display: block !important; opacity: 1 !important; background-color: #f3f4f6;"
                                      loading="lazy"
+                                     onclick="openPhotoModal({{ $index }})"
                                      onload="this.style.opacity='1'; this.style.display='block'; this.style.visibility='visible'; console.log('Image loaded:', this.src);"
                                      onerror="console.error('Image failed:', this.src); this.style.display='none'; const placeholder = this.nextElementSibling; if (placeholder && placeholder.classList.contains('photo-placeholder')) placeholder.style.display='flex';">
                                 
@@ -127,33 +128,33 @@
 
                 <!-- Reviews Section -->
                 <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-4 sm:space-y-0">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
                         <div>
-                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Avaliações</h2>
-                            <div class="flex items-center mt-2">
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Avaliações</h2>
+                            <div class="flex items-center mt-2 flex-wrap gap-1 sm:gap-0">
                                 <div class="flex text-yellow-400">
                                     @for($i = 1; $i <= 5; $i++)
-                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 {{ $i <= floor($establishment->rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 {{ $i <= floor($establishment->rating ?? 0) ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                         </svg>
                                     @endfor
                                 </div>
-                                <span class="ml-2 text-sm sm:text-base md:text-lg font-semibold">{{ number_format($establishment->rating ?? 0, 1) }}</span>
+                                <span class="ml-1 sm:ml-2 text-xs sm:text-sm md:text-base lg:text-lg font-semibold">{{ number_format($establishment->rating ?? 0, 1) }}</span>
                                 <span class="ml-1 text-xs sm:text-sm text-gray-500">({{ $establishment->user_ratings_total ?? $establishment->review_count ?? 0 }} avaliações)</span>
                             </div>
                         </div>
-                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                        <div class="flex flex-col sm:flex-row gap-2">
                             @if($establishment->external_id)
-                                <button onclick="syncExternalReviews()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors duration-200">
+                                <button onclick="syncExternalReviews()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm md:text-base font-semibold transition-colors duration-200 whitespace-nowrap">
                                     Atualizar Avaliações
                                 </button>
                             @endif
                             @auth
-                                <button onclick="openReviewModal()" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors duration-200">
+                                <button onclick="openReviewModal()" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm md:text-base font-semibold transition-colors duration-200 whitespace-nowrap">
                                     Escrever Avaliação
                                 </button>
                             @else
-                                <a href="{{ route('login') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors duration-200 text-center">
+                                <a href="{{ route('login') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm md:text-base font-semibold transition-colors duration-200 text-center whitespace-nowrap">
                                     Entrar para Avaliar
                                 </a>
                             @endauth
@@ -247,7 +248,7 @@
 <!-- Photo Modal -->
 <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
-        <div class="relative max-w-4xl w-full max-h-full">
+        <div class="relative max-w-4xl w-full max-h-full mx-2 sm:mx-0">
             <button onclick="closePhotoModal()" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-10 bg-black/50 rounded-full p-2">
                 <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -275,8 +276,8 @@
 
 <!-- Review Modal -->
 <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-3 sm:p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-gray-900">Escrever Avaliação</h3>
                 <button onclick="closeReviewModal()" class="text-gray-400 hover:text-gray-600">
@@ -325,11 +326,13 @@
 <script>
 // Photo modal functionality
 let currentPhotoIndex = 0;
+const establishmentId = {{ $establishment->id }};
 const photos = @json($establishment->photo_urls ?? []);
 
 function openPhotoModal(index) {
     currentPhotoIndex = index;
-    document.getElementById('modalPhoto').src = photos[index];
+    const photoUrl = `/establishment-photo/${establishmentId}/${index}`;
+    document.getElementById('modalPhoto').src = photoUrl;
     document.getElementById('modalPhoto').alt = "{{ $establishment->name }} - Foto " + (index + 1);
     document.getElementById('photoCounter').textContent = (index + 1) + " de " + photos.length;
     document.getElementById('photoModal').classList.remove('hidden');
@@ -374,13 +377,26 @@ let isLoading = false;
 document.addEventListener('DOMContentLoaded', function() {
     loadReviews();
     
-    // Force all images to be visible
-    const allImages = document.querySelectorAll('img[src*="establishment-photo"]');
+    // Force all images to be visible - find all images in photo gallery
+    const allImages = document.querySelectorAll('img[src*="establishment-photo"], .relative img[src*="/establishment-photo/"]');
     allImages.forEach(function(img) {
         img.style.opacity = '1';
         img.style.visibility = 'visible';
         img.style.display = 'block';
         img.style.backgroundColor = '#f3f4f6';
+        
+        // Make images clickable to open modal
+        const parentDiv = img.closest('.relative');
+        if (parentDiv && !parentDiv.classList.contains('photo-placeholder')) {
+            const srcMatch = img.src.match(/\/establishment-photo\/(\d+)\/(\d+)/);
+            if (srcMatch) {
+                const index = parseInt(srcMatch[2]);
+                parentDiv.style.cursor = 'pointer';
+                parentDiv.addEventListener('click', function() {
+                    openPhotoModal(index);
+                });
+            }
+        }
         
         img.addEventListener('load', function() {
             this.style.opacity = '1';

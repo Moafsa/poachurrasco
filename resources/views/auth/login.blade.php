@@ -23,8 +23,8 @@
         </p>
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+    <div class="mt-6 sm:mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-6 sm:py-8 px-4 shadow sm:rounded-lg sm:px-6 lg:px-10">
             <!-- Google OAuth Button -->
             <div class="mb-6">
                 <a href="{{ route('auth.google') }}" 
@@ -60,8 +60,9 @@
             @endif
 
             <!-- Email Login Form -->
-            <form class="space-y-6" method="POST" action="{{ route('login.post') }}">
+            <form class="space-y-6" method="POST" action="{{ route('login.post') }}" id="loginForm">
                 @csrf
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">
                         Email

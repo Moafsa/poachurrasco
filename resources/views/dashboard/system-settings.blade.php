@@ -36,7 +36,7 @@
             </div>
         @endif
 
-        <form action="{{ route('dashboard.system-settings.update') }}" method="POST" class="bg-white rounded-2xl shadow-lg p-8">
+        <form action="{{ route('system-settings.update') }}" method="POST" class="bg-white rounded-2xl shadow-lg p-8">
             @csrf
 
             <!-- Estabelecimentos Externos -->
@@ -119,6 +119,8 @@
     </div>
 </div>
 @endsection
+
+
 
 
 

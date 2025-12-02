@@ -4,57 +4,134 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <header class="bg-white border-b shadow-sm">
-        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                <div>
-                <h1 class="text-3xl font-bold text-gray-900">Encontre os melhores pontos de churrasco</h1>
-                <p class="mt-1 text-sm text-gray-600">
-                    Explore estabelecimentos do POA Capital do Churrasco, filtre por categoria, avaliação ou comodidades, e visite páginas dinâmicas alimentadas por dados do painel.
+    <header class="bg-white border-b shadow-sm sticky top-16 sm:top-20 z-30">
+        <div class="mx-auto flex max-w-7xl flex-col gap-3 sm:gap-4 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+            <div class="hidden sm:block">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Encontre os melhores pontos de churrasco</h1>
+                <p class="mt-1 text-xs sm:text-sm text-gray-600">
+                    Explore estabelecimentos do Porto Alegre Capital Mundial do Churrasco, filtre por categoria, avaliação ou comodidades, e visite páginas dinâmicas alimentadas por dados do painel.
                 </p>
-                </div>
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div class="relative">
+            </div>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div class="relative flex-1 sm:flex-initial">
                     <label for="searchInput" class="sr-only">Buscar estabelecimentos</label>
                     <input
                         type="text"
                         id="searchInput"
                         placeholder="Buscar por nome ou endereço"
-                        class="w-72 rounded-lg border border-gray-300 px-4 py-2 pr-10 text-sm text-gray-700 focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500"
+                        class="w-full sm:w-64 md:w-72 rounded-lg border border-gray-300 px-3 sm:px-4 py-2 pr-10 text-sm text-gray-700 focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500"
                     >
-                    <svg class="pointer-events-none absolute right-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg class="pointer-events-none absolute right-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <div class="flex gap-2">
+                    <button id="toggleFilters" class="inline-flex items-center justify-center gap-2 rounded-lg bg-churrasco-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-churrasco-600 flex-1 sm:flex-initial">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
-                    </div>
-                <button id="toggleFilters" class="inline-flex items-center gap-2 rounded-lg bg-churrasco-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-churrasco-600">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        <span>Filtros</span>
+                    </button>
+                    <button id="toggleSidebar" class="lg:hidden inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 transition hover:bg-gray-50 flex-1 sm:flex-initial">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
-                        Filtros
+                        <span>Lista</span>
                     </button>
                 </div>
             </div>
+        </div>
     </header>
 
-    <div class="flex h-[calc(100vh-200px)]">
-        <section class="relative flex-1">
-            <div id="map" class="h-full w-full"></div>
-            <div class="absolute top-4 right-4 flex flex-col gap-2">
+    <div class="flex flex-col lg:flex-row h-[calc(100vh-140px)] sm:h-[calc(100vh-180px)] md:h-[calc(100vh-200px)]">
+        <section class="relative flex-1 order-2 lg:order-1">
+            <div id="map" class="h-full w-full min-h-[300px] sm:min-h-[400px]"></div>
+            <div class="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col gap-2 z-10">
                 <button id="locateBtn" class="rounded-lg border border-gray-200 bg-white p-2 shadow transition hover:bg-gray-100" title="Localizar-me">
-                    <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </button>
                 <button id="fullscreenBtn" class="rounded-lg border border-gray-200 bg-white p-2 shadow transition hover:bg-gray-100" title="Tela cheia">
-                    <svg class="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg class="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4M4 4l5 5m11-1V4h-4m4 0l-5 5M4 16v4h4m-4 0l5-5m11 5v-4h-4m4 4l-5-5" />
                     </svg>
                 </button>
             </div>
         </section>
 
-        <aside class="flex w-96 flex-col border-l border-gray-200 bg-white">
-            <div id="filterPanel" class="space-y-6 border-b border-gray-200 p-6">
+        <!-- Mobile Filter Modal -->
+        <div id="mobileFilterModal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden">
+            <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-xl max-h-[80vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900">Filtros</h2>
+                    <button id="closeFilterModal" class="p-2 rounded-lg hover:bg-gray-100">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="mobileFilterContent" class="p-4 space-y-4">
+                    <div>
+                        <label for="mobileCategoryFilter" class="block text-sm font-medium text-gray-700">Categoria</label>
+                        <select id="mobileCategoryFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
+                            <option value="">Todas as categorias</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category }}">{{ ucfirst($category) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="mobilePriceFilter" class="block text-sm font-medium text-gray-700">Faixa de preço</label>
+                        <select id="mobilePriceFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
+                            <option value="">Qualquer preço</option>
+                            <option value="1">$ · Econômico</option>
+                            <option value="2">$$ · Casual</option>
+                            <option value="3">$$$ · Premium</option>
+                            <option value="4">$$$$ · Exclusivo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="mobileRatingFilter" class="block text-sm font-medium text-gray-700">Avaliação mínima</label>
+                        <select id="mobileRatingFilter" class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500">
+                            <option value="">Qualquer avaliação</option>
+                            <option value="4">4.0 e acima</option>
+                            <option value="3">3.0 e acima</option>
+                            <option value="2">2.0 e acima</option>
+                            <option value="1">1.0 e acima</option>
+                        </select>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700">Comodidades</h3>
+                        <div class="mt-3 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" value="estacionamento" class="mobile-amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                                Estacionamento
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" value="wifi" class="mobile-amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                                Wi-Fi
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" value="delivery" class="mobile-amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                                Delivery
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="checkbox" value="acessibilidade" class="mobile-amenity-checkbox rounded border-gray-300 text-churrasco-600 focus:ring-churrasco-500">
+                                Acessibilidade
+                            </label>
+                        </div>
+                    </div>
+                    <button id="mobileApplyFilters" class="w-full rounded-lg bg-churrasco-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-churrasco-600">
+                        Aplicar filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <aside id="mapSidebar" class="hidden lg:flex w-full lg:w-96 flex-col border-t lg:border-t-0 lg:border-l border-gray-200 bg-white order-1 lg:order-2 max-h-[50vh] lg:max-h-none" style="min-height: 0;">
+            <div id="filterPanel" class="space-y-4 sm:space-y-6 border-b border-gray-200 p-4 sm:p-6 overflow-y-auto">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-900">Filtrar resultados</h2>
                     <p class="text-sm text-gray-500">Ajuste o mapa às suas preferências e encontre os estabelecimentos certos.</p>
@@ -119,8 +196,8 @@
                 <span id="resultsCount" class="text-sm text-gray-600">0 estabelecimentos</span>
             </div>
 
-            <div class="flex flex-1 flex-col overflow-hidden">
-                <div id="establishmentsList" class="flex-1 space-y-4 overflow-y-auto px-6 py-6">
+            <div class="flex flex-1 flex-col" style="min-height: 0; overflow: hidden;">
+                <div id="establishmentsList" class="flex-1 space-y-4 overflow-y-auto px-6 py-6" style="min-height: 0; flex: 1 1 auto;">
                     <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
                         Ajuste os filtros ou busque para carregar estabelecimentos.
                     </div>
@@ -201,14 +278,16 @@
             mapState.filters.ratingMin = event.target.value;
         });
 
-        amenityCheckboxes.forEach((checkbox) => {
-            checkbox.addEventListener('change', () => {
-                const selected = Array.from(amenityCheckboxes)
-                    .filter((item) => item.checked)
-                    .map((item) => amenitiesTranslation[item.value] ?? item.value);
-                mapState.filters.amenities = selected;
+        if (amenityCheckboxes && amenityCheckboxes.length > 0) {
+            amenityCheckboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    const selected = Array.from(amenityCheckboxes)
+                        .filter((item) => item.checked)
+                        .map((item) => amenitiesTranslation[item.value] ?? item.value);
+                    mapState.filters.amenities = selected;
+                });
             });
-        });
+        }
 
         applyFiltersButton.addEventListener('click', () => {
             mapState.pagination.currentPage = 1; // Reset to first page when filters change
@@ -229,9 +308,104 @@
             }
         });
 
+        // Filter toggle - Desktop shows/hides panel, Mobile opens modal
         toggleFiltersButton.addEventListener('click', () => {
-            filterPanel.classList.toggle('hidden');
+            if (window.innerWidth >= 1024) {
+                // Desktop: toggle filter panel
+                filterPanel.classList.toggle('hidden');
+            } else {
+                // Mobile: open filter modal
+                const mobileFilterModal = document.getElementById('mobileFilterModal');
+                if (mobileFilterModal) {
+                    mobileFilterModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         });
+
+        // Close mobile filter modal
+        const closeFilterModal = document.getElementById('closeFilterModal');
+        const mobileFilterModal = document.getElementById('mobileFilterModal');
+        if (closeFilterModal && mobileFilterModal) {
+            closeFilterModal.addEventListener('click', () => {
+                mobileFilterModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+            
+            // Close on backdrop click
+            mobileFilterModal.addEventListener('click', (e) => {
+                if (e.target === mobileFilterModal) {
+                    mobileFilterModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+
+        // Mobile sidebar toggle
+        const toggleSidebarButton = document.getElementById('toggleSidebar');
+        const mapSidebar = document.getElementById('mapSidebar');
+        if (toggleSidebarButton && mapSidebar) {
+            toggleSidebarButton.addEventListener('click', () => {
+                mapSidebar.classList.toggle('hidden');
+            });
+        }
+        
+        // Ensure sidebar is visible on desktop after establishments load
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024 && mapState.establishments.length > 0) {
+                const sidebar = document.getElementById('mapSidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('hidden');
+                }
+            }
+        });
+
+        // Mobile filter handlers
+        const mobileCategoryFilter = document.getElementById('mobileCategoryFilter');
+        const mobilePriceFilter = document.getElementById('mobilePriceFilter');
+        const mobileRatingFilter = document.getElementById('mobileRatingFilter');
+        const mobileAmenityCheckboxes = document.querySelectorAll('.mobile-amenity-checkbox');
+        const mobileApplyFiltersButton = document.getElementById('mobileApplyFilters');
+
+        if (mobileCategoryFilter) {
+            mobileCategoryFilter.addEventListener('change', (event) => {
+                mapState.filters.category = event.target.value;
+            });
+        }
+
+        if (mobilePriceFilter) {
+            mobilePriceFilter.addEventListener('change', (event) => {
+                mapState.filters.priceLevel = event.target.value;
+            });
+        }
+
+        if (mobileRatingFilter) {
+            mobileRatingFilter.addEventListener('change', (event) => {
+                mapState.filters.ratingMin = event.target.value;
+            });
+        }
+
+        if (mobileAmenityCheckboxes && mobileAmenityCheckboxes.length > 0) {
+            mobileAmenityCheckboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', () => {
+                    const selected = Array.from(mobileAmenityCheckboxes)
+                        .filter((item) => item.checked)
+                        .map((item) => amenitiesTranslation[item.value] ?? item.value);
+                    mapState.filters.amenities = selected;
+                });
+            });
+        }
+
+        if (mobileApplyFiltersButton) {
+            mobileApplyFiltersButton.addEventListener('click', () => {
+                mapState.pagination.currentPage = 1;
+                fetchEstablishments();
+                if (mobileFilterModal) {
+                    mobileFilterModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
 
         document.getElementById('locateBtn').addEventListener('click', () => {
             if (navigator.geolocation) {
@@ -295,13 +469,37 @@
 
         try {
             const response = await fetch(`/api/establishments/map/data?${params.toString()}`);
-        const data = await response.json();
-        
-        if (data.success) {
+            const data = await response.json();
+            
+            if (data.success) {
                 mapState.establishments = data.establishments || [];
+                console.log('✅ Estabelecimentos carregados:', mapState.establishments.length);
+                console.log('📋 Primeiro estabelecimento (amostra):', mapState.establishments[0]);
+                
+                if (mapState.establishments.length === 0) {
+                    console.warn('⚠️ Nenhum estabelecimento retornado da API');
+                }
+                
+                // Update markers first
                 updateMarkers();
-                updateList();
-        } else {
+                console.log('📍 Marcadores atualizados');
+                
+                // Force update list with delay to ensure DOM is ready
+                setTimeout(() => {
+                    console.log('🔄 Chamando updateList...');
+                    updateList();
+                }, 100);
+                
+                // Ensure sidebar is visible on desktop when establishments are loaded
+                if (window.innerWidth >= 1024 && mapState.establishments.length > 0) {
+                    const sidebar = document.getElementById('mapSidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('hidden');
+                        sidebar.style.display = 'flex';
+                        console.log('👁️ Sidebar tornada visível');
+                    }
+                }
+            } else {
                 console.error('Erro ao carregar estabelecimentos:', data.error || 'Erro desconhecido');
                 mapState.establishments = [];
                 updateMarkers();
@@ -351,12 +549,30 @@
     }
 
     function updateList() {
+        console.log('🚀 updateList INICIADO');
+        
         const listContainer = document.getElementById('establishmentsList');
         const countLabel = document.getElementById('resultsCount');
         const paginationControls = document.getElementById('paginationControls');
         const totalItems = mapState.establishments.length;
 
-        countLabel.textContent = `${totalItems} estabelecimento${totalItems === 1 ? '' : 's'}`;
+        console.log('📊 Total de estabelecimentos:', totalItems);
+        console.log('📦 Container da lista encontrado:', !!listContainer);
+        console.log('🏷️ Label de contagem encontrado:', !!countLabel);
+
+        if (!listContainer) {
+            console.error('❌ Container da lista não encontrado!');
+            return;
+        }
+        
+        if (!countLabel) {
+            console.error('❌ Label de contagem não encontrado!');
+        }
+
+        if (countLabel) {
+            countLabel.textContent = `${totalItems} estabelecimento${totalItems === 1 ? '' : 's'}`;
+            console.log('✅ Contador atualizado para:', countLabel.textContent);
+        }
 
         if (totalItems === 0) {
             listContainer.innerHTML = `
@@ -379,24 +595,90 @@
         const endIndex = Math.min(startIndex + mapState.pagination.itemsPerPage, totalItems);
         const paginatedEstablishments = mapState.establishments.slice(startIndex, endIndex);
 
-        // Clear and render paginated items
-        listContainer.innerHTML = '';
-
-        paginatedEstablishments.forEach((establishment) => {
-            const wrapper = document.createElement('article');
-            wrapper.className = 'cursor-pointer rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow';
-            wrapper.innerHTML = buildListItem(establishment);
-            wrapper.addEventListener('click', () => {
-                const marker = mapState.markers.find((item) => item.getTitle() === establishment.name);
-                if (marker) {
-                    mapState.map.panTo(marker.getPosition());
-                    mapState.map.setZoom(15);
-                    mapState.infoWindow.setContent(buildInfoWindow(establishment));
-                    mapState.infoWindow.open(mapState.map, marker);
-                }
-            });
-            listContainer.appendChild(wrapper);
+        console.log('Paginação calculada:', {
+            startIndex,
+            endIndex,
+            totalItems,
+            paginatedCount: paginatedEstablishments.length
         });
+
+        // Clear and render paginated items
+        console.log('🧹 Limpando container...');
+        listContainer.innerHTML = '';
+        // Force container to have proper dimensions - critical fix for 0px height issue
+        const parent = listContainer.parentElement;
+        if (parent) {
+            parent.style.display = 'flex';
+            parent.style.flexDirection = 'column';
+            parent.style.minHeight = '0';
+            parent.style.overflow = 'hidden';
+        }
+        listContainer.style.display = 'block';
+        listContainer.style.visibility = 'visible';
+        listContainer.style.opacity = '1';
+        listContainer.style.flex = '1 1 auto';
+        listContainer.style.minHeight = '0';
+        listContainer.style.overflowY = 'auto';
+
+        if (paginatedEstablishments.length === 0) {
+            console.warn('⚠️ Nenhum estabelecimento para renderizar na página atual');
+            listContainer.innerHTML = `
+                <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+                    Não há estabelecimentos para exibir nesta página.
+                </div>
+            `;
+            return;
+        }
+
+        console.log('🎨 Renderizando', paginatedEstablishments.length, 'estabelecimentos');
+        
+        // Create a document fragment for better performance
+        const fragment = document.createDocumentFragment();
+
+        paginatedEstablishments.forEach((establishment, index) => {
+            try {
+                console.log(`Processando estabelecimento ${index + 1}:`, establishment.name);
+                
+                const wrapper = document.createElement('article');
+                wrapper.className = 'cursor-pointer rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow mb-4';
+                wrapper.style.display = 'block';
+                wrapper.style.visibility = 'visible';
+                wrapper.style.opacity = '1';
+                
+                const listItemHtml = buildListItem(establishment);
+                console.log(`HTML gerado para ${establishment.name}:`, listItemHtml.substring(0, 100));
+                
+                if (!listItemHtml || listItemHtml.trim() === '') {
+                    console.error('buildListItem retornou HTML vazio para:', establishment.name);
+                    return;
+                }
+                
+                wrapper.innerHTML = listItemHtml;
+                wrapper.addEventListener('click', () => {
+                    const marker = mapState.markers.find((item) => item.getTitle() === establishment.name);
+                    if (marker) {
+                        mapState.map.panTo(marker.getPosition());
+                        mapState.map.setZoom(15);
+                        mapState.infoWindow.setContent(buildInfoWindow(establishment));
+                        mapState.infoWindow.open(mapState.map, marker);
+                    }
+                });
+                
+                fragment.appendChild(wrapper);
+                console.log(`✅ Estabelecimento ${index + 1} preparado:`, establishment.name);
+            } catch (error) {
+                console.error('❌ Erro ao renderizar estabelecimento:', establishment.name, error);
+                console.error('Stack trace:', error.stack);
+            }
+        });
+
+        // Append all at once
+        console.log('📤 Adicionando', fragment.children.length, 'elementos ao container...');
+        listContainer.appendChild(fragment);
+        
+        console.log('✅ Total de elementos no container após renderização:', listContainer.children.length);
+        console.log('📏 Altura do container:', listContainer.offsetHeight, 'px');
+        console.log('👀 Container visível?', window.getComputedStyle(listContainer).display !== 'none');
 
         // Update pagination controls
         updatePaginationControls(totalItems, totalPages);
@@ -530,45 +812,63 @@
     }
 
     function buildListItem(establishment) {
-        const rating = parseFloat(establishment.rating ?? 0).toFixed(1);
-        const totalReviews = establishment.user_ratings_total ?? establishment.review_count ?? 0;
-        const address = establishment.formatted_address ?? establishment.address ?? 'Endereço não disponível';
-        const status = establishment.business_status && establishment.business_status !== 'OPERATIONAL'
-            ? `<span class="text-xs font-medium uppercase text-red-500">${establishment.business_status}</span>`
-            : '';
-        
-        // Get first photo URL if available
-        let photoHtml = '';
-        if (establishment.photo_urls && Array.isArray(establishment.photo_urls) && establishment.photo_urls.length > 0) {
-            const photoUrl = establishment.photo_urls[0];
-            photoHtml = `<img src="${photoUrl}" alt="${establishment.name}" class="h-16 w-16 flex-shrink-0 rounded-lg object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`;
-        }
-        
-        const emojiFallback = `<div class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100 text-2xl" style="display: ${photoHtml ? 'none' : 'flex'};">${buildListEmoji(establishment.category)}</div>`;
+        try {
+            if (!establishment || !establishment.name) {
+                console.error('Estabelecimento inválido:', establishment);
+                return '';
+            }
+            
+            const rating = parseFloat(establishment.rating ?? 0).toFixed(1);
+            const totalReviews = establishment.user_ratings_total ?? establishment.review_count ?? 0;
+            const address = establishment.formatted_address ?? establishment.address ?? 'Endereço não disponível';
+            const status = establishment.business_status && establishment.business_status !== 'OPERATIONAL'
+                ? `<span class="text-xs font-medium uppercase text-red-500">${establishment.business_status}</span>`
+                : '';
+            
+            // Get first photo URL if available
+            let photoHtml = '';
+            if (establishment.photo_urls && Array.isArray(establishment.photo_urls) && establishment.photo_urls.length > 0) {
+                const photoUrl = establishment.photo_urls[0];
+                photoHtml = `<img src="${photoUrl}" alt="${establishment.name}" class="h-16 w-16 flex-shrink-0 rounded-lg object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`;
+            }
+            
+            const emojiFallback = `<div class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100 text-2xl" style="display: ${photoHtml ? 'none' : 'flex'};">${buildListEmoji(establishment.category)}</div>`;
 
-        return `
-            <div class="flex items-start gap-3">
-                ${photoHtml || ''}
-                ${emojiFallback}
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-gray-900">${establishment.name}</h3>
-                        ${status}
+            return `
+                <div class="flex items-start gap-3">
+                    ${photoHtml || ''}
+                    ${emojiFallback}
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-900">${establishment.name || 'Nome não disponível'}</h3>
+                            ${status}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">${address}</p>
+                        <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                            <span class="flex items-center gap-1 text-orange-500">
+                                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                ${rating}
+                            </span>
+                            <span>${totalReviews} avaliações</span>
+                            <span class="capitalize">${establishment.category ?? 'categoria n/d'}</span>
+                        </div>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">${address}</p>
-                    <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                        <span class="flex items-center gap-1 text-orange-500">
-                            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            ${rating}
-                        </span>
-                        <span>${totalReviews} avaliações</span>
-                        <span class="capitalize">${establishment.category ?? 'categoria n/d'}</span>
                 </div>
+            `;
+        } catch (error) {
+            console.error('Erro ao construir item da lista:', error, establishment);
+            return `
+                <div class="flex items-start gap-3">
+                    <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 text-2xl">📍</div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-gray-900">${establishment?.name || 'Estabelecimento'}</h3>
+                        <p class="mt-1 text-xs text-gray-500">Erro ao carregar detalhes</p>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     function buildListEmoji(category) {

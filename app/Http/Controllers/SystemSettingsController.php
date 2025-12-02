@@ -44,7 +44,7 @@ class SystemSettingsController extends Controller
             Log::error('Error updating system settings: ' . $e->getMessage());
             
             return redirect()
-                ->route('dashboard.system-settings')
+                ->back()
                 ->with('error', 'Erro ao atualizar configurações. Tente novamente.');
         }
     }
@@ -62,6 +62,8 @@ class SystemSettingsController extends Controller
         ]);
     }
 }
+
+
 
 
 
