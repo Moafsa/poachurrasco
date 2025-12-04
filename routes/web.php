@@ -17,11 +17,13 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\BbqPortalController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\SuperAdminController;
 use App\Models\User;
 
 // Public routes
+Route::get('/secretaria-turismo', [PublicSiteController::class, 'tourismSecretariat'])->name('tourism.secretariat');
 Route::get('/', [PublicSiteController::class, 'home'])->name('home');
 Route::get('/mapa', [PublicSiteController::class, 'map'])->name('mapa');
 
@@ -73,7 +75,11 @@ Route::get('/login', function () {
 })->name('login')->middleware('guest');
 
 Route::post('/login', function (Request $request) {
-    \Log::info('Login POST request received', ['email' => $request->email]);
+    \Log::info('Login POST request received', [
+        'email' => $request->email,
+        'has_csrf' => $request->has('_token'),
+        'session_id' => $request->session()->getId(),
+    ]);
     
     try {
         $credentials = $request->validate([
@@ -98,11 +104,27 @@ Route::post('/login', function (Request $request) {
             ]);
         }
 
-        \Log::info('Auth successful');
+        $user = Auth::user();
+        \Log::info('Auth successful', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'is_admin' => $user->isAdmin(),
+        ]);
+
+        // Merge session cart to user cart if exists
+        try {
+            $oldSessionId = $request->session()->getId();
+            \App\Models\Cart::mergeSessionCartToUser($oldSessionId, $user->id);
+        } catch (\Exception $e) {
+            \Log::warning('Failed to merge session cart', ['error' => $e->getMessage()]);
+        }
 
         try {
             $request->session()->regenerate();
-            \Log::info('Session regenerated');
+            \Log::info('Session regenerated', [
+                'new_session_id' => $request->session()->getId(),
+                'user_id_in_session' => $request->session()->get('login_web_' . sha1('Illuminate\Auth\Guard')),
+            ]);
         } catch (\Throwable $e) {
             \Log::error('Session regenerate error: ' . $e->getMessage());
             throw $e;
@@ -184,6 +206,15 @@ Route::post('/register', function (Request $request) {
     ]);
 
     Auth::login($user);
+    
+    // Merge session cart to user cart if exists
+    try {
+        $sessionId = $request->session()->getId();
+        \App\Models\Cart::mergeSessionCartToUser($sessionId, $user->id);
+    } catch (\Exception $e) {
+        \Log::warning('Failed to merge session cart on register', ['error' => $e->getMessage()]);
+    }
+    
     $request->session()->regenerate();
 
     return redirect()->route('dashboard');
@@ -251,6 +282,35 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/establishments/{id}/reviews', [ReviewController::class, 'getCombinedReviews'])->name('api.establishments.reviews');
 Route::post('/api/establishments/{id}/sync-reviews', [ReviewController::class, 'syncExternalReviews'])->name('api.establishments.sync.reviews');
 
+// Cart routes (public - no auth required, with rate limiting)
+Route::prefix('api/cart')->name('api.cart.')->middleware(['throttle:60,1'])->group(function () {
+    Route::get('/', [CartController::class, 'index'])->middleware('throttle:120,1')->name('index');
+    Route::post('/add', [CartController::class, 'add'])->middleware('throttle:30,1')->name('add');
+    Route::put('/update', [CartController::class, 'update'])->middleware('throttle:30,1')->name('update');
+    Route::delete('/remove/{productId}', [CartController::class, 'remove'])->middleware('throttle:30,1')->name('remove');
+    Route::delete('/clear', [CartController::class, 'clear'])->middleware('throttle:10,1')->name('clear');
+    Route::get('/count', [CartController::class, 'count'])->middleware('throttle:120,1')->name('count');
+    Route::post('/calculate-totals', [CartController::class, 'calculateTotals'])->middleware('throttle:60,1')->name('calculate-totals');
+});
+
+// Cart and Checkout pages (public)
+Route::get('/carrinho', function () {
+    return view('cart.index');
+})->name('cart.index');
+
+Route::get('/checkout', function () {
+    return view('checkout.index');
+})->name('checkout.index')->middleware('auth');
+
+Route::get('/pedido/{order}/confirmacao', function (\App\Models\Order $order) {
+    // Check authorization
+    if ($order->user_id !== auth()->id()) {
+        abort(403);
+    }
+    $order->load(['establishment', 'user']);
+    return view('checkout.confirmation', compact('order'));
+})->name('checkout.confirmation')->middleware('auth');
+
 // Protected routes
 Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -268,6 +328,7 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/establishments/search/external', [EstablishmentController::class, 'searchExternal'])->name('establishments.search.external');
     Route::post('/establishments/import/external', [EstablishmentController::class, 'importExternal'])->name('establishments.import.external');
     Route::get('/establishments/map/data', [EstablishmentController::class, 'mapData'])->name('establishments.map.data');
+    Route::get('/api/establishments/search', [EstablishmentController::class, 'search'])->name('api.establishments.search');
     
     // System settings routes
     Route::get('/system-settings', [SystemSettingsController::class, 'index'])->name('system-settings');

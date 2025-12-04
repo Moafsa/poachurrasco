@@ -6,6 +6,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Establishment;
 use App\Services\NotificationService;
+use App\Jobs\ProcessOrderJob;
+use App\Jobs\SendOrderConfirmationJob;
+use App\Jobs\UpdateInventoryJob;
+use App\Jobs\NotifyEstablishmentJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -129,8 +133,11 @@ class OrderController extends Controller
             'customer_notes' => $request->customer_notes,
         ]);
 
-        // Send notifications
-        $this->notificationService->notifyNewOrder($order);
+        // Dispatch jobs to process order in background
+        ProcessOrderJob::dispatch($order);
+        SendOrderConfirmationJob::dispatch($order);
+        UpdateInventoryJob::dispatch($order);
+        NotifyEstablishmentJob::dispatch($order);
 
         return response()->json([
             'success' => true,

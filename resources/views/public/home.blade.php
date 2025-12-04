@@ -652,6 +652,300 @@
             </div>
         </div>
     </section>
+
+    <!-- Tourism Quality Seal Section -->
+    <section class="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 py-16 sm:py-20 md:py-24 relative overflow-hidden">
+        <!-- Decorative background elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-amber-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-200/30 to-orange-200/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-12 md:mb-16">
+                <div class="inline-flex items-center justify-center mb-6">
+                    <div class="relative">
+                        <!-- Premium Seal Badge -->
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-2xl border-8 border-white/90 relative transform rotate-12 hover:rotate-0 transition-transform duration-500">
+                            <svg class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                                <svg class="w-5 h-5 text-yellow-900" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-orange-700 border border-orange-300/50">
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Selo de Qualidade
+                    </span>
+                </div>
+                
+                <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+                    Selo de Qualidade da<br/>Secretaria de Turismo
+                </h2>
+                <p class="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed mb-8">
+                    Reconhecimento de excelência concedido aos estabelecimentos que representam o melhor da tradição gastronômica e hospitalidade de Porto Alegre
+                </p>
+                
+                <!-- Features -->
+                <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-orange-200/50">
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2 text-center">Alto Padrão</h3>
+                        <p class="text-sm text-gray-600 text-center">Reconhecimento de qualidade excepcional em produtos e serviços</p>
+                    </div>
+                    
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-orange-200/50">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-orange-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2 text-center">Reconhecimento Oficial</h3>
+                        <p class="text-sm text-gray-600 text-center">Avaliação e aprovação da Secretaria de Turismo de Porto Alegre</p>
+                    </div>
+                    
+                    <div class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-orange-200/50 sm:col-span-2 md:col-span-1">
+                        <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2 text-center">Excelência Garantida</h3>
+                        <p class="text-sm text-gray-600 text-center">Selos concedidos por mérito ou votação da comunidade</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Seal Establishments -->
+            @if(isset($qualitySealEstablishments) && $qualitySealEstablishments->count() > 0)
+                <div class="mt-16">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Estabelecimentos Certificados</h3>
+                            <p class="text-gray-600">Conheça os estabelecimentos que receberam o Selo de Qualidade</p>
+                        </div>
+                    </div>
+
+                    <div class="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach($qualitySealEstablishments as $establishment)
+                            <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-orange-200 bg-white shadow-xl transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-orange-400">
+                                <!-- Quality Seal Badge -->
+                                <div class="absolute top-4 right-4 z-10">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white transform group-hover:scale-110 transition-transform">
+                                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                        </svg>
+                                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                                            <svg class="w-3 h-3 text-yellow-900" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100">
+                                    @php
+                                        $photo = $establishment->photo_urls[0] ?? null;
+                                    @endphp
+                                    @if ($photo)
+                                        <img
+                                            src="{{ $photo }}"
+                                            alt="{{ $establishment->name }}"
+                                            class="h-full w-full object-cover"
+                                            loading="lazy"
+                                        >
+                                    @else
+                                        <div class="flex h-full w-full items-center justify-center text-5xl">🥩</div>
+                                    @endif
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                    <div class="absolute bottom-4 left-4 right-4">
+                                        <div class="inline-flex items-center gap-2 rounded-full bg-orange-500/90 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-white">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            Selo de Qualidade
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-1 flex-col p-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ $establishment->name }}</h3>
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">
+                                        {{ Str::limit($establishment->description ?? 'Estabelecimento certificado com Selo de Qualidade da Secretaria de Turismo.', 120) }}
+                                    </p>
+                                    
+                                    <dl class="mt-auto space-y-2 text-sm text-gray-500">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="h-4 w-4 text-orange-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span class="font-semibold">{{ number_format($establishment->rating ?? 0, 1, ',', '.') }}</span>
+                                            <span>avaliação</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            </svg>
+                                            <span>{{ $establishment->formatted_address ?? $establishment->address ?? 'Porto Alegre, RS' }}</span>
+                                        </div>
+                                        @if($establishment->tourism_quality_seal_date)
+                                            <div class="flex items-center gap-2 text-xs text-orange-600 font-medium">
+                                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                Certificado em {{ $establishment->tourism_quality_seal_date->format('d/m/Y') }}
+                                            </div>
+                                        @endif
+                                    </dl>
+                                    
+                                    <div class="mt-6 pt-6 border-t border-gray-100">
+                                        <a
+                                            href="{{ route('public.establishment', $establishment) }}"
+                                            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:from-orange-600 hover:to-orange-700 hover:shadow-lg"
+                                        >
+                                            Ver Estabelecimento
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <div class="mt-12 text-center">
+                    <div class="inline-block bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-orange-200/50">
+                        <svg class="w-16 h-16 text-orange-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-gray-600 text-lg">
+                            Estabelecimentos certificados aparecerão aqui em breve.
+                        </p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- CTA Section -->
+            <div class="mt-16 text-center">
+                <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-8 md:p-12 shadow-2xl">
+                    <h3 class="text-2xl sm:text-3xl font-bold text-white mb-4">
+                        Seja Reconhecido com o Selo de Qualidade
+                    </h3>
+                    <p class="text-orange-50 text-lg mb-6 max-w-2xl mx-auto">
+                        O Selo de Qualidade da Secretaria de Turismo reconhece estabelecimentos que se destacam pela excelência em produtos, serviços e tradição gastronômica.
+                    </p>
+                    <a href="{{ url('/secretaria-turismo') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-orange-600 rounded-xl font-semibold text-lg hover:bg-orange-50 transition-all shadow-lg hover:shadow-xl">
+                        Saiba Mais
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tourism Secretariat Section -->
+    <section class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white py-16 sm:py-20 md:py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                <div>
+                    <div class="mb-6">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-blue-200 backdrop-blur-sm">
+                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                            </svg>
+                            Parceria Oficial
+                        </span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                        Secretaria de Turismo de Porto Alegre
+                    </h2>
+                    <p class="text-lg sm:text-xl text-blue-100 leading-relaxed mb-8">
+                        Esta iniciativa é uma parceria da Secretaria de Turismo de Porto Alegre com a Expo Churrasco para promover e fortalecer o turismo na capital gaúcha, destacando nossa rica tradição gastronômica e cultural.
+                    </p>
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-orange-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Promoção Turística</h3>
+                                <p class="text-blue-100">Desenvolvimento de estratégias para posicionar Porto Alegre como destino turístico de excelência</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-orange-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Fortalecimento Econômico</h3>
+                                <p class="text-blue-100">Apoio ao setor turístico local gerando oportunidades de negócios e desenvolvimento</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-orange-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Preservação Cultural</h3>
+                                <p class="text-blue-100">Valorização das tradições gaúchas e do churrasco como expressão cultural única</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ url('/secretaria-turismo') }}" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold text-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl">
+                        Conheça Mais Sobre a Secretaria
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </a>
+                </div>
+                <div class="mt-8 md:mt-0">
+                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                        <h3 class="text-2xl font-bold mb-6">Capital Mundial do Churrasco</h3>
+                        <p class="text-blue-100 leading-relaxed mb-6">
+                            A parceria entre a Secretaria de Turismo e a Expo Churrasco reconhece Porto Alegre como a Capital Mundial do Churrasco, promovendo esta tradição centenária como um dos principais atrativos turísticos da cidade.
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center text-blue-100">
+                                <svg class="w-5 h-5 text-orange-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Tradição centenária preservada
+                            </div>
+                            <div class="flex items-center text-blue-100">
+                                <svg class="w-5 h-5 text-orange-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Experiências gastronômicas únicas
+                            </div>
+                            <div class="flex items-center text-blue-100">
+                                <svg class="w-5 h-5 text-orange-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Apoio ao setor turístico local
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
 @push('scripts')

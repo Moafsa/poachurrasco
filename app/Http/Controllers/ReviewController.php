@@ -5,11 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Review;
 use App\Models\Establishment;
 use App\Services\ReviewService;
+use App\Services\StorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
+    protected StorageService $storageService;
+
+    public function __construct(StorageService $storageService)
+    {
+        $this->storageService = $storageService;
+    }
     /**
      * Get combined reviews for an establishment (internal + external)
      */
@@ -97,9 +104,7 @@ class ReviewController extends Controller
             'establishment_id' => $request->establishment_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'images' => $request->images ? array_map(function($image) {
-                return $image->store('reviews', 'public');
-            }, $request->images) : null,
+            'images' => $request->images ? $this->storageService->storeImageCollection($request->images, 'reviews') : null,
             'is_verified' => false,
         ]);
 
@@ -129,9 +134,7 @@ class ReviewController extends Controller
         $review->update([
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'images' => $request->images ? array_map(function($image) {
-                return $image->store('reviews', 'public');
-            }, $request->images) : $review->images,
+            'images' => $request->images ? $this->storageService->storeImageCollection($request->images, 'reviews') : $review->images,
         ]);
 
         // Update establishment rating

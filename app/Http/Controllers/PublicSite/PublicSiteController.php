@@ -184,6 +184,27 @@ class PublicSiteController extends Controller
             $heroSection = null;
         }
 
+        // Get establishments with Tourism Quality Seal
+        try {
+            // Check if the column exists before querying
+            if (Schema::hasColumn('establishments', 'has_tourism_quality_seal')) {
+                $qualitySealEstablishments = Establishment::query()
+                    ->where('has_tourism_quality_seal', true)
+                    ->where('status', 'active')
+                    ->with(['products' => fn ($query) => $query->active()->take(2)])
+                    ->orderByDesc('tourism_quality_seal_date')
+                    ->orderByDesc('rating')
+                    ->take(6)
+                    ->get();
+            } else {
+                // Column doesn't exist yet, return empty collection
+                $qualitySealEstablishments = collect([]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Error loading quality seal establishments: ' . $e->getMessage());
+            $qualitySealEstablishments = collect([]);
+        }
+
         return view('public.home', [
             'metrics' => $metrics,
             'featuredEstablishments' => $featuredEstablishments,
@@ -191,6 +212,7 @@ class PublicSiteController extends Controller
             'highlightPromotions' => $highlightPromotions,
             'highlightServices' => $highlightServices,
             'heroSection' => $heroSection,
+            'qualitySealEstablishments' => $qualitySealEstablishments,
         ]);
     }
 
@@ -401,6 +423,14 @@ class PublicSiteController extends Controller
             
             abort(500);
         }
+    }
+
+    /**
+     * Display the Tourism Secretariat page.
+     */
+    public function tourismSecretariat()
+    {
+        return view('public.tourism-secretariat');
     }
 
     /**

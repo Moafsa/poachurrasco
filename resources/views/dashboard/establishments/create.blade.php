@@ -24,9 +24,61 @@
 
     <!-- Form -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form action="{{ route('establishments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+        <form action="{{ route('establishments.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8" id="establishment-form">
             @csrf
             
+            <!-- Link to Existing Establishment -->
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Vincular-se a um Estabelecimento Existente</h2>
+                <p class="text-sm text-gray-600 mb-6">Procure um estabelecimento já cadastrado no sistema para se vincular, ou deixe em branco para criar um novo.</p>
+                
+                <div class="relative">
+                    <label for="establishment_search" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Buscar Estabelecimento
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="establishment_search" 
+                               name="establishment_search"
+                               autocomplete="off"
+                               class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-churrasco-500 focus:border-churrasco-500 transition-colors duration-200"
+                               placeholder="Digite o nome do estabelecimento...">
+                        <button type="button" 
+                                id="clear_search" 
+                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                title="Limpar seleção">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <input type="hidden" id="existing_establishment_id" name="existing_establishment_id" value="">
+                        <div id="establishment_search_results" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Comece a digitar para ver os estabelecimentos disponíveis</p>
+                    <div id="selected_establishment_info" class="hidden mt-3 p-3 bg-churrasco-50 border border-churrasco-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900" id="selected_name"></p>
+                                <p class="text-xs text-gray-600 mt-1" id="selected_address"></p>
+                            </div>
+                            <span class="text-xs text-churrasco-600 font-semibold">Selecionado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">OU</span>
+                </div>
+            </div>
+
+            <!-- Create New Establishment -->
+            <div id="new-establishment-form">
             <!-- Basic Information -->
             <div class="bg-white rounded-2xl shadow-lg p-8">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Informações Básicas</h2>
@@ -264,13 +316,182 @@
                     Cancelar
                 </a>
                 <button type="submit" 
+                        id="submit-btn"
                         class="px-8 py-3 bg-gradient-to-r from-churrasco-500 to-churrasco-600 text-white rounded-xl hover:from-churrasco-600 hover:to-churrasco-700 transition-all duration-300 transform hover:scale-105 font-semibold shadow-lg">
-                    Cadastrar Estabelecimento
+                    <span id="submit-text">Cadastrar Estabelecimento</span>
                 </button>
+            </div>
             </div>
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('establishment_search');
+    const resultsDiv = document.getElementById('establishment_search_results');
+    const hiddenInput = document.getElementById('existing_establishment_id');
+    const clearBtn = document.getElementById('clear_search');
+    const selectedInfo = document.getElementById('selected_establishment_info');
+    const selectedName = document.getElementById('selected_name');
+    const selectedAddress = document.getElementById('selected_address');
+    const form = document.getElementById('establishment-form');
+    const newEstablishmentForm = document.getElementById('new-establishment-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    let searchTimeout = null;
+    let selectedEstablishment = null;
+
+    // Handle search input
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        // If user is typing and there's a selection, clear it
+        if (selectedEstablishment && query !== selectedEstablishment.display) {
+            clearSelection();
+        }
+        
+        if (query.length < 2) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`{{ route('api.establishments.search') }}?q=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.establishments.length > 0) {
+                    displayResults(data.establishments);
+                } else {
+                    resultsDiv.innerHTML = '<div class="p-4 text-sm text-gray-500">Nenhum estabelecimento encontrado</div>';
+                    resultsDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error searching establishments:', error);
+                resultsDiv.classList.add('hidden');
+            });
+        }, 300);
+    });
+
+    // Display search results
+    function displayResults(establishments) {
+        resultsDiv.innerHTML = '';
+        
+        establishments.forEach(establishment => {
+            const item = document.createElement('div');
+            item.className = 'p-4 hover:bg-churrasco-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors';
+            item.innerHTML = `
+                <div class="font-semibold text-gray-900">${establishment.name}</div>
+                <div class="text-sm text-gray-600 mt-1">${establishment.address || establishment.city || ''}</div>
+            `;
+            
+            item.addEventListener('click', function() {
+                selectEstablishment(establishment);
+            });
+            
+            resultsDiv.appendChild(item);
+        });
+        
+        resultsDiv.classList.remove('hidden');
+    }
+
+    // Select an establishment
+    function selectEstablishment(establishment) {
+        selectedEstablishment = establishment;
+        searchInput.value = establishment.display;
+        hiddenInput.value = establishment.id;
+        resultsDiv.classList.add('hidden');
+        
+        // Show selected info
+        selectedName.textContent = establishment.name;
+        selectedAddress.textContent = establishment.address || establishment.city || '';
+        selectedInfo.classList.remove('hidden');
+        clearBtn.classList.remove('hidden');
+        
+        updateFormState();
+    }
+
+    // Clear selection
+    function clearSelection() {
+        selectedEstablishment = null;
+        searchInput.value = '';
+        hiddenInput.value = '';
+        selectedInfo.classList.add('hidden');
+        clearBtn.classList.add('hidden');
+        updateFormState();
+    }
+
+    // Clear button handler
+    clearBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearSelection();
+        searchInput.focus();
+    });
+
+    // Update form state based on selection
+    function updateFormState() {
+        if (selectedEstablishment) {
+            // Hide new establishment form
+            newEstablishmentForm.style.display = 'none';
+            submitText.textContent = 'Vincular-se ao Estabelecimento';
+            
+            // Make all fields in new form not required
+            const requiredFields = newEstablishmentForm.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                field.removeAttribute('required');
+            });
+        } else {
+            // Show new establishment form
+            newEstablishmentForm.style.display = 'block';
+            submitText.textContent = 'Cadastrar Estabelecimento';
+            
+            // Make all fields required again
+            const requiredFields = newEstablishmentForm.querySelectorAll('input[required], select[required], textarea[required]');
+            requiredFields.forEach(field => {
+                field.setAttribute('required', 'required');
+            });
+        }
+    }
+
+    // Close results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target) && !clearBtn.contains(e.target)) {
+            resultsDiv.classList.add('hidden');
+        }
+    });
+
+    // Handle keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            resultsDiv.classList.add('hidden');
+            if (selectedEstablishment) {
+                searchInput.blur();
+            }
+        }
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        if (selectedEstablishment) {
+            // If linking to existing, we don't need to validate new form fields
+            return true;
+        }
+        // Otherwise, normal validation will occur
+    });
+});
+</script>
+@endpush
 @endsection
 
 

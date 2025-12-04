@@ -80,6 +80,14 @@ class GoogleAuthController extends Controller
             // Login user
             Auth::login($user, true);
 
+            // Merge session cart to user cart if exists
+            try {
+                $sessionId = request()->session()->getId();
+                \App\Models\Cart::mergeSessionCartToUser($sessionId, $user->id);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to merge session cart on Google login', ['error' => $e->getMessage()]);
+            }
+
             \Log::info('Google OAuth: User logged in successfully', ['email' => $user->email]);
 
             return redirect()->intended(route('dashboard'));

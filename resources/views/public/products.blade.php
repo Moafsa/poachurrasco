@@ -107,9 +107,16 @@
                                     <div class="text-sm text-red-600 font-semibold">Indisponível</div>
                                 @endif
                             </div>
-                            <button class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
-                                Adicionar ao Carrinho
-                            </button>
+                            @if($product->is_active)
+                                <button onclick="addToCart({{ $product->id }})" 
+                                        class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                                    Adicionar ao Carrinho
+                                </button>
+                            @else
+                                <button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg font-semibold cursor-not-allowed">
+                                    Indisponível
+                                </button>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -128,4 +135,42 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script src="{{ asset('js/cart.js') }}"></script>
+<script>
+    async function addToCart(productId) {
+        const button = event.target;
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Adicionando...';
+
+        try {
+            const result = await CartManager.addToCart(productId, 1);
+            
+            if (result.success) {
+                button.textContent = '✓ Adicionado!';
+                button.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                button.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                    button.classList.remove('bg-green-500');
+                    button.classList.add('bg-orange-500', 'hover:bg-orange-600');
+                }, 2000);
+            } else {
+                alert(result.message || 'Erro ao adicionar ao carrinho');
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Erro ao adicionar ao carrinho. Por favor, tente novamente.');
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    }
+</script>
+@endpush
 @endsection

@@ -5,14 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Establishment;
 use App\Services\EstablishmentApiService;
+use App\Services\StorageService;
 use App\Jobs\ProcessEstablishmentJob;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
 class EstablishmentController extends Controller
 {
+    protected StorageService $storageService;
+
+    public function __construct(StorageService $storageService)
+    {
+        $this->storageService = $storageService;
+    }
     public function index()
     {
         $establishments = Establishment::where('user_id', auth()->id())
@@ -29,6 +35,32 @@ class EstablishmentController extends Controller
 
     public function store(Request $request)
     {
+        // Check if user wants to link to existing establishment
+        if ($request->filled('existing_establishment_id')) {
+            $request->validate([
+                'existing_establishment_id' => 'required|exists:establishments,id',
+            ]);
+
+            $establishment = Establishment::findOrFail($request->input('existing_establishment_id'));
+            
+            // Check if establishment already has an owner
+            if ($establishment->user_id && $establishment->user_id !== auth()->id()) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['existing_establishment_id' => 'Este estabelecimento já possui um proprietário.']);
+            }
+
+            // Link user to existing establishment
+            $establishment->update([
+                'user_id' => auth()->id(),
+                'status' => $establishment->status === 'active' ? 'active' : 'pending',
+            ]);
+
+            return redirect()->route('establishments.show', $establishment)
+                ->with('success', 'Você foi vinculado ao estabelecimento com sucesso!');
+        }
+
+        // Create new establishment
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -54,19 +86,15 @@ class EstablishmentController extends Controller
 
         // Handle file uploads
         if ($request->hasFile('logo')) {
-            $validated['logo'] = $request->file('logo')->store('establishments/logos', 'public');
+            $validated['logo'] = $this->storageService->storeImage($request->file('logo'), 'establishments/logos');
         }
 
         if ($request->hasFile('cover_image')) {
-            $validated['cover_image'] = $request->file('cover_image')->store('establishments/covers', 'public');
+            $validated['cover_image'] = $this->storageService->storeImage($request->file('cover_image'), 'establishments/covers');
         }
 
         if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('establishments/images', 'public');
-            }
-            $validated['images'] = $imagePaths;
+            $validated['images'] = $this->storageService->storeImageCollection($request->file('images'), 'establishments/images');
         }
 
         $establishment = Establishment::create($validated);
@@ -120,31 +148,25 @@ class EstablishmentController extends Controller
         // Handle file uploads
         if ($request->hasFile('logo')) {
             if ($establishment->logo) {
-                Storage::disk('public')->delete($establishment->logo);
+                $this->storageService->deleteFile($establishment->logo);
             }
-            $validated['logo'] = $request->file('logo')->store('establishments/logos', 'public');
+            $validated['logo'] = $this->storageService->storeImage($request->file('logo'), 'establishments/logos');
         }
 
         if ($request->hasFile('cover_image')) {
             if ($establishment->cover_image) {
-                Storage::disk('public')->delete($establishment->cover_image);
+                $this->storageService->deleteFile($establishment->cover_image);
             }
-            $validated['cover_image'] = $request->file('cover_image')->store('establishments/covers', 'public');
+            $validated['cover_image'] = $this->storageService->storeImage($request->file('cover_image'), 'establishments/covers');
         }
 
         if ($request->hasFile('images')) {
             // Delete old images
             if ($establishment->images) {
-                foreach ($establishment->images as $image) {
-                    Storage::disk('public')->delete($image);
-                }
+                $this->storageService->deleteStoredFiles($establishment->images);
             }
             
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('establishments/images', 'public');
-            }
-            $validated['images'] = $imagePaths;
+            $validated['images'] = $this->storageService->storeImageCollection($request->file('images'), 'establishments/images');
         }
 
         $establishment->update($validated);
@@ -159,15 +181,13 @@ class EstablishmentController extends Controller
 
         // Delete associated files
         if ($establishment->logo) {
-            Storage::disk('public')->delete($establishment->logo);
+            $this->storageService->deleteFile($establishment->logo);
         }
         if ($establishment->cover_image) {
-            Storage::disk('public')->delete($establishment->cover_image);
+            $this->storageService->deleteFile($establishment->cover_image);
         }
         if ($establishment->images) {
-            foreach ($establishment->images as $image) {
-                Storage::disk('public')->delete($image);
-            }
+            $this->storageService->deleteStoredFiles($establishment->images);
         }
 
         $establishment->delete();
@@ -427,6 +447,49 @@ class EstablishmentController extends Controller
                 'error' => 'Erro ao importar estabelecimento'
             ], 500);
         }
+    }
+
+    /**
+     * Search establishments for autocomplete
+     */
+    public function search(Request $request)
+    {
+        $request->validate([
+            'q' => 'nullable|string|max:255',
+        ]);
+
+        $query = Establishment::query();
+
+        // Search by name, address, or city
+        if ($request->filled('q')) {
+            $searchTerm = $request->input('q');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('address', 'like', "%{$searchTerm}%")
+                  ->orWhere('city', 'like', "%{$searchTerm}%")
+                  ->orWhere('formatted_address', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        // Limit results and order by name
+        $establishments = $query->select('id', 'name', 'address', 'city', 'state', 'formatted_address')
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'establishments' => $establishments->map(function ($establishment) {
+                return [
+                    'id' => $establishment->id,
+                    'name' => $establishment->name,
+                    'address' => $establishment->formatted_address ?: $establishment->address,
+                    'city' => $establishment->city,
+                    'state' => $establishment->state,
+                    'display' => $establishment->name . ($establishment->city ? ' - ' . $establishment->city . '/' . $establishment->state : ''),
+                ];
+            }),
+        ]);
     }
 
     /**

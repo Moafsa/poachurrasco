@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Product')
+@section('title', 'Editar Produto')
 
 @section('content')
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -9,10 +9,10 @@
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
-            Back to product
+            Voltar para produto
         </a>
-        <h1 class="mt-4 text-3xl font-bold text-gray-900">Edit product</h1>
-        <p class="text-gray-600 mt-2">Update pricing, availability and presentation.</p>
+        <h1 class="mt-4 text-3xl font-bold text-gray-900">Editar Produto</h1>
+        <p class="text-gray-600 mt-2">Atualize preços, disponibilidade e apresentação.</p>
     </div>
 
     @if ($errors->any())
@@ -28,7 +28,7 @@
     @include('dashboard.products.partials.form', [
         'action' => route('products.update', $product),
         'method' => 'PUT',
-        'submitLabel' => 'Update product',
+        'submitLabel' => 'Atualizar produto',
         'product' => $product,
         'establishments' => $establishments,
         'categories' => $categories,

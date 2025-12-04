@@ -86,6 +86,65 @@
                 display: inline-flex !important;
             }
         }
+        
+        /* Fix header layout when logged in */
+        @media (min-width: 1024px) {
+            .auth-buttons-desktop {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                white-space: nowrap !important;
+                min-width: 0;
+                align-items: center;
+            }
+            
+            nav .max-w-7xl {
+                min-width: 0;
+            }
+            
+            /* Ensure header doesn't overflow */
+            nav > div > div {
+                overflow: visible;
+            }
+            
+            /* Ensure user name text is never visible in header - only in tooltip */
+            .auth-buttons-desktop span.text-gray-700,
+            .auth-buttons-desktop span.text-sm.font-medium,
+            .auth-buttons-desktop .text-gray-700.text-sm,
+            .auth-buttons-desktop > div:first-child > div:first-child span:not(.text-white),
+            .auth-buttons-desktop div.text-base {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            /* Prevent text overflow in header */
+            nav .flex.justify-between {
+                gap: 0.75rem;
+            }
+            
+            /* Ensure buttons don't overlap */
+            .auth-buttons-desktop > div {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            /* Prevent avatar and buttons from overlapping */
+            .auth-buttons-desktop .relative.group {
+                margin-right: 0.5rem;
+                z-index: 100;
+            }
+            
+            /* Ensure tooltip appears above all content */
+            .auth-buttons-desktop .relative.group .absolute {
+                z-index: 99999 !important;
+                position: fixed !important;
+            }
+            
+            /* Calculate tooltip position dynamically */
+            .auth-buttons-desktop .relative.group:hover .absolute {
+                position: fixed !important;
+            }
+        }
     </style>
     <script>
         // Hide auth buttons immediately on mobile (runs before DOM is ready)
@@ -101,10 +160,10 @@
 <body class="font-sans antialiased bg-gray-50">
     <div class="min-h-screen flex flex-col">
         <!-- Navigation -->
-        <nav class="bg-white/80 backdrop-blur-lg shadow-lg fixed top-0 left-0 right-0 z-50 border-b border-gray-200/50">
+        <nav class="bg-white/80 backdrop-blur-lg shadow-lg fixed top-0 left-0 right-0 z-[100] border-b border-gray-200/50">
             <div class="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 lg:px-8 w-full">
-                <div class="flex justify-between items-center h-16 sm:h-20 w-full">
-                    <div class="flex items-center flex-1 min-w-0 pr-2">
+                <div class="flex justify-between items-center h-16 sm:h-20 w-full gap-4">
+                    <div class="flex items-center flex-1 min-w-0 pr-2 overflow-hidden">
                         <!-- Logo -->
                         <div class="flex-shrink-0 flex items-center">
                             <a href="{{ route('home') }}" class="flex items-center">
@@ -115,7 +174,7 @@
                         </div>
 
                         <!-- Navigation Links - Desktop -->
-                        <div class="hidden lg:ml-10 lg:flex lg:space-x-8">
+                        <div class="hidden lg:ml-10 lg:flex lg:space-x-6 flex-shrink-0">
                             <a href="{{ route('recipes.guides') }}" class="text-gray-700 hover:text-churrasco-600 px-3 py-2 rounded-md text-sm font-semibold transition-colors duration-200 inline-flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -135,56 +194,78 @@
                                 </svg>
                                 Marketplace
                             </a>
+                            <a href="{{ route('tourism.secretariat') }}" class="text-gray-700 hover:text-churrasco-600 px-3 py-2 rounded-md text-sm font-semibold transition-colors duration-200 inline-flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Secretaria
+                            </a>
+                            <a href="{{ route('cart.index') }}" class="text-gray-700 hover:text-churrasco-600 px-3 py-2 rounded-md text-sm font-semibold transition-colors duration-200 inline-flex items-center relative">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                Carrinho
+                                <span id="cart-count" class="hidden absolute -top-1 -right-1 bg-churrasco-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                            </a>
                         </div>
                     </div>
 
                     <!-- Auth Links - Desktop Only (hidden on mobile) -->
-                    <div class="auth-buttons-desktop items-center space-x-2 lg:space-x-3" style="display: none;">
-                        @auth
-                            <!-- User Avatar and Name -->
-                            <div class="hidden lg:flex items-center space-x-3">
+                    <div class="auth-buttons-desktop hidden lg:flex items-center space-x-2 lg:space-x-2 flex-shrink-0 ml-2">
+                        @if(auth()->check())
+                            <!-- User Avatar with Tooltip -->
+                            <div class="relative group flex-shrink-0 z-[100]">
                                 @if(auth()->user()->avatar)
                                     <img src="{{ auth()->user()->avatar }}"
                                          alt="{{ auth()->user()->name }}"
-                                         class="w-8 h-8 rounded-full"
+                                         class="w-10 h-10 rounded-full cursor-pointer border-2 border-gray-200 hover:border-churrasco-500 transition-colors"
                                          crossorigin="anonymous"
                                          referrerpolicy="no-referrer"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-churrasco-500 to-churrasco-600 rounded-full flex items-center justify-center" style="display: none;">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-churrasco-500 to-churrasco-600 rounded-full flex items-center justify-center cursor-pointer border-2 border-gray-200 hover:border-churrasco-500 transition-colors" style="display: none;">
                                         <span class="text-white text-sm font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
                                     </div>
                                 @else
-                                    <div class="w-8 h-8 bg-gradient-to-br from-churrasco-500 to-churrasco-600 rounded-full flex items-center justify-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-churrasco-500 to-churrasco-600 rounded-full flex items-center justify-center cursor-pointer border-2 border-gray-200 hover:border-churrasco-500 transition-colors">
                                         <span class="text-white text-sm font-bold">{{ substr(auth()->user()->name, 0, 1) }}</span>
                                     </div>
                                 @endif
-                                <span class="text-gray-700 text-sm font-medium">{{ auth()->user()->name }}</span>
+                                <!-- Tooltip -->
+                                <div class="user-tooltip absolute right-0 top-full mt-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap" style="z-index: 99999;">
+                                    {{ auth()->user()->name }}
+                                    <div class="absolute -top-1 right-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                                </div>
                             </div>
 
-                            <a href="{{ route('dashboard') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200">
-                                Painel
-                            </a>
-                            <a href="{{ route('favorites.index') }}" class="hidden lg:inline-flex text-gray-700 hover:text-churrasco-600 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200">
-                                <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                </svg>
-                                Favoritos
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}" class="hidden lg:inline">
-                                @csrf
-                                <button type="submit" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200">
-                                    Sair
-                                </button>
-                            </form>
+                            <!-- Buttons -->
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                @if(!request()->routeIs('dashboard'))
+                                <a href="{{ route('dashboard') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 lg:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
+                                    Painel
+                                </a>
+                                @endif
+                                <a href="{{ route('favorites.index') }}" class="hidden lg:inline-flex text-gray-700 hover:text-churrasco-600 px-3 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
+                                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                    </svg>
+                                    Favoritos
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}" class="hidden lg:inline flex-shrink-0">
+                                    @csrf
+                                    <button type="submit" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 lg:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
+                                        Sair
+                                    </button>
+                                </form>
+                            </div>
                         @else
                             <a href="{{ route('register') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 sm:px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
                                 <span class="hidden sm:inline">Cadastrar estabelecimento</span>
                                 <span class="sm:hidden">Cadastrar</span>
                             </a>
-                            <a href="{{ route('login') }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 sm:px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200">
+                            <a href="{{ route('login') }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 sm:px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
                                 Entrar
                             </a>
-                        @endauth
+                        @endif
                     </div>
 
                     <!-- Mobile menu button - Always visible on mobile/tablet -->
@@ -230,7 +311,24 @@
                             Marketplace
                         </div>
                     </a>
-                    @auth
+                    <a href="{{ route('tourism.secretariat') }}" class="text-gray-700 hover:text-churrasco-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Secretaria
+                        </div>
+                    </a>
+                    <a href="{{ route('cart.index') }}" class="text-gray-700 hover:text-churrasco-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium relative">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Carrinho
+                            <span id="cart-count-mobile" class="hidden ml-2 bg-churrasco-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </div>
+                    </a>
+                    @if(auth()->check())
                         <div class="border-t border-gray-200 pt-4 pb-3">
                             <div class="flex items-center px-3 mb-3">
                                 @if(auth()->user()->avatar)
@@ -252,9 +350,11 @@
                                     <div class="text-base font-medium text-gray-800">{{ auth()->user()->name }}</div>
                                 </div>
                             </div>
+                            @if(!request()->routeIs('dashboard'))
                             <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-churrasco-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium">
                                 Painel
                             </a>
+                            @endif
                             <a href="{{ route('favorites.index') }}" class="text-gray-700 hover:text-churrasco-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium">
                                 Favoritos
                             </a>
@@ -274,7 +374,7 @@
                                 Entrar
                             </a>
                         </div>
-                    @endauth
+                    @endif
                 </div>
             </div>
         </nav>
@@ -311,6 +411,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                     <span class="text-xs font-medium">Marketplace</span>
+                </a>
+                <a href="{{ route('cart.index') }}" class="flex flex-col items-center justify-center flex-1 px-2 py-1 text-gray-600 hover:text-churrasco-600 transition-colors {{ request()->routeIs('cart.index') ? 'text-churrasco-600' : '' }} relative">
+                    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span class="text-xs font-medium">Carrinho</span>
+                    <span id="cart-count-bottom" class="hidden absolute top-0 right-2 bg-churrasco-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">0</span>
                 </a>
                 <button type="button" id="mobile-menu-button-bottom" class="flex flex-col items-center justify-center flex-1 px-2 py-1 text-gray-600 hover:text-churrasco-600 transition-colors">
                     <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,6 +468,7 @@
                             <li><a href="{{ route('mapa') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Mapa interativo</a></li>
                             <li><a href="{{ route('products') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Marketplace</a></li>
                             <li><a href="{{ route('recipes.guides') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Receitas e vídeos</a></li>
+                            <li><a href="{{ url('/secretaria-turismo') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Secretaria de Turismo</a></li>
                             <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Parceiros</a></li>
                         </ul>
                     </div>
@@ -399,7 +507,7 @@
                         &copy; {{ date('Y') }} {{ config('app.name', 'Porto Alegre Capital Mundial do Churrasco') }}. All rights reserved.
                     </p>
                     <p class="text-gray-500 text-sm mt-2 md:mt-0">
-                        Crafted with ?? by the <span class="text-churrasco-400 font-semibold">Conext</span> team.
+                        Crafted with dedicação by the <span class="text-churrasco-400 font-semibold">Conext</span> team.
                     </p>
                 </div>
             </div>
@@ -407,6 +515,57 @@
     </div>
     
     @stack('scripts')
+    
+    <!-- Cart Manager Script -->
+    <script src="{{ asset('js/cart.js') }}"></script>
+    
+    <script>
+        // Fix tooltip positioning to appear above all content
+        (function() {
+            'use strict';
+            
+            function positionTooltip() {
+                const avatarGroups = document.querySelectorAll('.auth-buttons-desktop .relative.group');
+                
+                avatarGroups.forEach(function(group) {
+                    const tooltip = group.querySelector('.user-tooltip');
+                    if (!tooltip) return;
+                    
+                    const avatar = group.querySelector('img, div.w-10');
+                    if (!avatar) return;
+                    
+                    function updateTooltipPosition() {
+                        const rect = avatar.getBoundingClientRect();
+                        
+                        // Position tooltip relative to viewport (fixed positioning)
+                        tooltip.style.position = 'fixed';
+                        tooltip.style.top = (rect.bottom + 8) + 'px';
+                        tooltip.style.right = (window.innerWidth - rect.right) + 'px';
+                        tooltip.style.zIndex = '99999';
+                    }
+                    
+                    group.addEventListener('mouseenter', updateTooltipPosition);
+                    window.addEventListener('scroll', function() {
+                        if (group.matches(':hover')) {
+                            updateTooltipPosition();
+                        }
+                    });
+                    window.addEventListener('resize', function() {
+                        if (group.matches(':hover')) {
+                            updateTooltipPosition();
+                        }
+                    });
+                });
+            }
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', positionTooltip);
+            } else {
+                positionTooltip();
+            }
+        })();
+    </script>
     
     <script>
         // Hide auth buttons and show mobile menu button on mobile

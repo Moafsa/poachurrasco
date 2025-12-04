@@ -96,10 +96,17 @@ return new class extends Migration
                 $table->enum('subscription_status', ['active', 'inactive', 'expired', 'cancelled'])->default('active');
                 $table->timestamp('subscription_expires_at')->nullable();
                 $table->decimal('commission_rate', 5, 2)->default(5.00);
+                $table->decimal('delivery_fee', 10, 2)->default(0)->nullable();
                 
                 // Verification
                 $table->boolean('is_verified')->default(false);
                 $table->timestamp('verification_date')->nullable();
+                
+                // Tourism Quality Seal
+                $table->boolean('has_tourism_quality_seal')->default(false);
+                $table->timestamp('tourism_quality_seal_date')->nullable();
+                $table->enum('tourism_quality_seal_reason', ['vote', 'merit', 'special'])->nullable();
+                $table->text('tourism_quality_seal_notes')->nullable();
                 
                 // SEO
                 $table->string('meta_title')->nullable();
@@ -135,6 +142,7 @@ return new class extends Migration
                 $table->index(['latitude', 'longitude']);
                 $table->index(['subscription_plan', 'subscription_status']);
                 $table->index('is_verified');
+                $table->index('has_tourism_quality_seal');
                 $table->index(['external_id', 'external_source']);
                 $table->index(['is_external', 'last_synced_at']);
                 $table->index('place_id');
@@ -443,6 +451,38 @@ return new class extends Migration
             });
         }
 
+        // Carts table (for persistent cart storage)
+        if (!Schema::hasTable('carts')) {
+            Schema::create('carts', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+                $table->string('session_id')->nullable()->index();
+                $table->timestamps();
+                $table->softDeletes();
+
+                // Indexes
+                $table->index(['user_id', 'deleted_at']);
+                $table->index(['session_id', 'deleted_at']);
+            });
+        }
+
+        // Cart Items table
+        if (!Schema::hasTable('cart_items')) {
+            Schema::create('cart_items', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('cart_id')->constrained()->onDelete('cascade');
+                $table->foreignId('product_id')->constrained()->onDelete('cascade');
+                $table->integer('quantity')->default(1);
+                $table->decimal('price', 10, 2); // Store price at time of adding
+                $table->timestamps();
+
+                // Indexes
+                $table->index('cart_id');
+                $table->index('product_id');
+                $table->unique(['cart_id', 'product_id']); // One product per cart
+            });
+        }
+
         // Orders table
         if (!Schema::hasTable('orders')) {
             Schema::create('orders', function (Blueprint $table) {
@@ -638,6 +678,8 @@ return new class extends Migration
         Schema::dropIfExists('bbq_guides');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('orders');
+        Schema::dropIfExists('cart_items');
+        Schema::dropIfExists('carts');
         Schema::dropIfExists('favorites');
         Schema::dropIfExists('external_reviews');
         Schema::dropIfExists('reviews');

@@ -90,8 +90,13 @@ class Establishment extends Model
         'subscription_status',
         'subscription_expires_at',
         'commission_rate',
+        'delivery_fee',
         'is_verified',
         'verification_date',
+        'has_tourism_quality_seal',
+        'tourism_quality_seal_date',
+        'tourism_quality_seal_reason',
+        'tourism_quality_seal_notes',
         'meta_title',
         'meta_description',
         'meta_keywords',
@@ -126,10 +131,13 @@ class Establishment extends Model
         'social_media' => 'array',
         'is_featured' => 'boolean',
         'is_verified' => 'boolean',
+        'has_tourism_quality_seal' => 'boolean',
         'subscription_expires_at' => 'datetime',
         'verification_date' => 'datetime',
+        'tourism_quality_seal_date' => 'datetime',
         'rating' => 'decimal:2',
         'external_rating' => 'decimal:2',
+        'delivery_fee' => 'decimal:2',
         // External API casts
         'external_data' => 'array',
         'last_synced_at' => 'datetime',
@@ -212,6 +220,11 @@ class Establishment extends Model
     public function scopeVerified($query)
     {
         return $query->where('is_verified', true);
+    }
+
+    public function scopeWithTourismQualitySeal($query)
+    {
+        return $query->where('has_tourism_quality_seal', true);
     }
 
     public function scopeByCategory($query, $category)

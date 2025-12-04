@@ -14,6 +14,8 @@ services:
       - poachurrasco_logs:/var/log
       - ./resources:/var/www/resources
       - ./public:/var/www/public
+      - ./routes:/var/www/routes
+      - ./app:/var/www/app
     depends_on:
       - db
       - redis
@@ -48,7 +50,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-poachurras_password}
       
       # Configurações de sessão
-      - SESSION_DRIVER=cookie
+      - SESSION_DRIVER=database
       - SESSION_LIFETIME=120
       - SESSION_ENCRYPT=false
       - SESSION_PATH=/
@@ -59,7 +61,8 @@ services:
       
       # Configurações de cache e filas
       - BROADCAST_CONNECTION=log
-      - FILESYSTEM_DISK=local
+      - FILESYSTEM_DISK=${STORAGE_DISK:-public}
+      - STORAGE_DISK=${STORAGE_DISK:-public}
       - QUEUE_CONNECTION=database
       - CACHE_STORE=redis
       - CACHE_PREFIX=
@@ -73,21 +76,30 @@ services:
       - REDIS_CACHE_DB=1
       
       # Configurações de email
-      - MAIL_MAILER=log
-      - MAIL_HOST=127.0.0.1
-      - MAIL_PORT=2525
-      - MAIL_USERNAME=null
-      - MAIL_PASSWORD=null
-      - MAIL_ENCRYPTION=null
-      - MAIL_FROM_ADDRESS=hello@example.com
-      - MAIL_FROM_NAME=
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-127.0.0.1}
+      - MAIL_PORT=${MAIL_PORT:-2525}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-hello@example.com}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-${APP_NAME}}
       
       # Configurações AWS (opcionais)
-      - AWS_ACCESS_KEY_ID=
-      - AWS_SECRET_ACCESS_KEY=
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_BUCKET=
-      - AWS_USE_PATH_STYLE_ENDPOINT=false
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_BUCKET=${AWS_BUCKET:-}
+      - AWS_USE_PATH_STYLE_ENDPOINT=${AWS_USE_PATH_STYLE_ENDPOINT:-false}
+      
+      # Configurações MinIO
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-EwsP5sPulj1RNxy76tJA}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-w5RtVLMjx3DwP18L0BJhe5weU8ykL1EXCroXtanT}
+      - MINIO_BUCKET=${MINIO_BUCKET:-poachurras}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-https://winio.conext.click}
+      - MINIO_URL=${MINIO_URL:-https://winio.conext.click/poachurras}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_USE_PATH_STYLE=${MINIO_USE_PATH_STYLE:-true}
       
       # Configurações do Vite
       - VITE_APP_NAME=
@@ -141,6 +153,72 @@ services:
       - poachurras-network
     environment:
       - NODE_ENV=development
+
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: poachurras_queue
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    networks:
+      - poachurras-network
+    environment:
+      # Configurações da aplicação Laravel
+      - APP_NAME=Porto Alegre Capital Mundial do Churrasco
+      - APP_ENV=production
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=true
+      - APP_TIMEZONE=UTC
+      - APP_URL=${APP_URL:-http://localhost:8000}
+      - APP_LOCALE=en
+      - APP_FALLBACK_LOCALE=en
+      
+      # Configurações do banco de dados
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-poachurras_db}
+      - DB_USERNAME=${DB_USERNAME:-poachurras_user}
+      - DB_PASSWORD=${DB_PASSWORD:-poachurras_password}
+      
+      # Configurações de cache e filas
+      - QUEUE_CONNECTION=database
+      - CACHE_STORE=redis
+      
+      # Configurações do Redis
+      - REDIS_CLIENT=phpredis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_CACHE_DB=1
+      
+      # Configurações de email
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-127.0.0.1}
+      - MAIL_PORT=${MAIL_PORT:-2525}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-hello@example.com}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-${APP_NAME}}
+      
+      # Configurações MinIO
+      - STORAGE_DISK=${STORAGE_DISK:-public}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-EwsP5sPulj1RNxy76tJA}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-w5RtVLMjx3DwP18L0BJhe5weU8ykL1EXCroXtanT}
+      - MINIO_BUCKET=${MINIO_BUCKET:-poachurras}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-https://winio.conext.click}
+      - MINIO_URL=${MINIO_URL:-https://winio.conext.click/poachurras}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      - MINIO_USE_PATH_STYLE=${MINIO_USE_PATH_STYLE:-true}
+    volumes:
+      - poachurrasco_data:/var/www/storage
+      - poachurrasco_logs:/var/log
+    command: sh -c "echo 'Waiting for database...' && while ! nc -z db 5432; do sleep 1; done && echo 'Database ready!' && php artisan queue:work --queue=notifications --tries=3 --timeout=90 --sleep=3"
 
 networks:
   poachurras-network:

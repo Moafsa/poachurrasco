@@ -3,47 +3,54 @@
 @section('title', 'Mapa Interativo')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <header class="bg-white border-b shadow-sm sticky top-16 sm:top-20 z-30">
-        <div class="mx-auto flex max-w-7xl flex-col gap-3 sm:gap-4 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
-            <div class="hidden sm:block">
-                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Encontre os melhores pontos de churrasco</h1>
-                <p class="mt-1 text-xs sm:text-sm text-gray-600">
-                    Explore estabelecimentos do Porto Alegre Capital Mundial do Churrasco, filtre por categoria, avaliação ou comodidades, e visite páginas dinâmicas alimentadas por dados do painel.
-                </p>
-            </div>
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div class="relative flex-1 sm:flex-initial">
-                    <label for="searchInput" class="sr-only">Buscar estabelecimentos</label>
-                    <input
-                        type="text"
-                        id="searchInput"
-                        placeholder="Buscar por nome ou endereço"
-                        class="w-full sm:w-64 md:w-72 rounded-lg border border-gray-300 px-3 sm:px-4 py-2 pr-10 text-sm text-gray-700 focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500"
-                    >
-                    <svg class="pointer-events-none absolute right-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+<div class="min-h-screen bg-gray-50" style="padding-top: 0;">
+    <header id="mapHeader" class="bg-white border-b shadow-sm fixed top-16 sm:top-20 left-0 right-0 z-30 transition-transform duration-300 ease-in-out overflow-hidden transform translate-y-0">
+        <div id="headerContainer" class="mx-auto flex max-w-7xl flex-col gap-3 sm:gap-4 px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 transition-all duration-300 ease-in-out">
+            <div id="headerCollapsibleContent" class="transition-all duration-300 ease-in-out overflow-hidden">
+                <div id="headerContent" class="hidden sm:block">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Encontre os melhores pontos de churrasco</h1>
+                    <p class="mt-1 text-xs sm:text-sm text-gray-600">
+                        Explore estabelecimentos do Porto Alegre Capital Mundial do Churrasco, filtre por categoria, avaliação ou comodidades, e visite páginas dinâmicas alimentadas por dados do painel.
+                    </p>
                 </div>
-                <div class="flex gap-2">
-                    <button id="toggleFilters" class="inline-flex items-center justify-center gap-2 rounded-lg bg-churrasco-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-churrasco-600 flex-1 sm:flex-initial">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <div id="searchSection" class="flex flex-col gap-2 sm:flex-row sm:items-center mt-3 sm:mt-0">
+                    <div class="relative flex-1 sm:flex-initial">
+                        <label for="searchInput" class="sr-only">Buscar estabelecimentos</label>
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Buscar por nome ou endereço"
+                            class="w-full sm:w-64 md:w-72 rounded-lg border border-gray-300 px-3 sm:px-4 py-2 pr-10 text-sm text-gray-700 focus:border-churrasco-500 focus:outline-none focus:ring-2 focus:ring-churrasco-500"
+                        >
+                        <svg class="pointer-events-none absolute right-3 top-2.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <span>Filtros</span>
-                    </button>
-                    <button id="toggleSidebar" class="lg:hidden inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 transition hover:bg-gray-50 flex-1 sm:flex-initial">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                        <span>Lista</span>
-                    </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="toggleFilters" class="inline-flex items-center justify-center gap-2 rounded-lg bg-churrasco-500 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-churrasco-600 flex-1 sm:flex-initial">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            <span>Filtros</span>
+                        </button>
+                        <button id="toggleSidebar" class="lg:hidden inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 transition hover:bg-gray-50 flex-1 sm:flex-initial">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                            <span>Lista</span>
+                        </button>
+                    </div>
                 </div>
             </div>
+            <button id="toggleHeader" class="hidden sm:flex items-center justify-center w-full py-2 text-gray-500 hover:text-gray-700 transition-colors group">
+                <svg id="headerArrow" class="h-5 w-5 transform transition-transform duration-300 rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
         </div>
     </header>
 
-    <div class="flex flex-col lg:flex-row h-[calc(100vh-140px)] sm:h-[calc(100vh-180px)] md:h-[calc(100vh-200px)]">
+    <div id="mapContainer" class="flex flex-col lg:flex-row transition-all duration-300 ease-in-out" style="height: calc(100vh - 140px); margin-top: 0;">
         <section class="relative flex-1 order-2 lg:order-1">
             <div id="map" class="h-full w-full min-h-[300px] sm:min-h-[400px]"></div>
             <div class="absolute top-2 right-2 sm:top-4 sm:right-4 flex flex-col gap-2 z-10">
@@ -130,8 +137,13 @@
             </div>
         </div>
 
-        <aside id="mapSidebar" class="hidden lg:flex w-full lg:w-96 flex-col border-t lg:border-t-0 lg:border-l border-gray-200 bg-white order-1 lg:order-2 max-h-[50vh] lg:max-h-none" style="min-height: 0;">
-            <div id="filterPanel" class="space-y-4 sm:space-y-6 border-b border-gray-200 p-4 sm:p-6 overflow-y-auto">
+        <aside id="mapSidebar" class="hidden lg:flex w-full lg:w-96 flex-col border-t lg:border-t-0 lg:border-l border-gray-200 bg-white order-1 lg:order-2 max-h-[50vh] lg:max-h-none transition-all duration-300 ease-in-out" style="min-height: 0;">
+            <button id="toggleFilterPanel" class="hidden lg:flex items-center justify-center w-full py-2 bg-gray-50 hover:bg-gray-100 border-b border-gray-200 text-gray-500 hover:text-gray-700 transition-colors group cursor-pointer">
+                <svg id="filterArrow" class="h-5 w-5 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div id="filterPanel" class="space-y-4 sm:space-y-6 border-b border-gray-200 p-4 sm:p-6 overflow-y-auto transition-all duration-300 ease-in-out" style="max-width: 100%; overflow: hidden;">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-900">Filtrar resultados</h2>
                     <p class="text-sm text-gray-500">Ajuste o mapa às suas preferências e encontre os estabelecimentos certos.</p>
@@ -260,6 +272,304 @@
         const applyFiltersButton = document.getElementById('applyFilters');
         const toggleFiltersButton = document.getElementById('toggleFilters');
         const filterPanel = document.getElementById('filterPanel');
+        
+        // Header collapse/expand functionality
+        const mapHeader = document.getElementById('mapHeader');
+        const headerContainer = document.getElementById('headerContainer');
+        const headerCollapsibleContent = document.getElementById('headerCollapsibleContent');
+        const toggleHeader = document.getElementById('toggleHeader');
+        const headerArrow = document.getElementById('headerArrow');
+        const mapContainer = document.getElementById('mapContainer');
+        let headerExpanded = true; // Start expanded
+        let lastScrollTop = 0;
+        let isHeaderVisible = true;
+        
+        function updateMapHeight() {
+            if (!mapContainer || !mapHeader) return;
+            
+            const headerHeight = isHeaderVisible ? mapHeader.offsetHeight : 0;
+            const topOffset = window.innerWidth >= 640 ? 80 : 64; // top-16 sm:top-20
+            const newHeight = window.innerHeight - headerHeight - topOffset;
+            mapContainer.style.height = `${Math.max(newHeight, 300)}px`;
+            mapContainer.style.marginTop = isHeaderVisible ? '0' : '0';
+            
+            // Resize map if it exists
+            if (mapState.map) {
+                setTimeout(() => {
+                    google.maps.event.trigger(mapState.map, 'resize');
+                }, 300);
+            }
+        }
+        
+        // Initialize header as expanded on mobile, can be collapsed on desktop
+        if (headerCollapsibleContent) {
+            if (window.innerWidth >= 640) {
+                // Desktop: start expanded but can be collapsed
+                headerCollapsibleContent.style.maxHeight = 'none';
+                headerCollapsibleContent.style.opacity = '1';
+                headerExpanded = true;
+            } else {
+                // Mobile: always visible
+                headerCollapsibleContent.style.maxHeight = 'none';
+                headerCollapsibleContent.style.opacity = '1';
+                headerExpanded = true;
+            }
+        }
+        
+        // Initial map height calculation
+        setTimeout(updateMapHeight, 100);
+        
+        // Initialize scroll position
+        lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Scroll handler to hide/show header
+        function handleScroll() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Only hide/show on desktop
+            if (window.innerWidth < 640) {
+                // On mobile, always show header
+                if (!isHeaderVisible) {
+                    mapHeader.classList.remove('-translate-y-full');
+                    mapHeader.classList.add('translate-y-0');
+                    isHeaderVisible = true;
+                    setTimeout(updateMapHeight, 300);
+                }
+                lastScrollTop = scrollTop;
+                return;
+            }
+            
+            // Show header when at top of page
+            if (scrollTop <= 10) {
+                if (!isHeaderVisible) {
+                    mapHeader.classList.remove('-translate-y-full');
+                    mapHeader.classList.add('translate-y-0');
+                    isHeaderVisible = true;
+                    setTimeout(updateMapHeight, 300);
+                }
+            } else {
+                // Hide header when scrolling down, show when scrolling up
+                if (scrollTop > lastScrollTop && scrollTop > 50) {
+                    // Scrolling down
+                    if (isHeaderVisible) {
+                        mapHeader.classList.remove('translate-y-0');
+                        mapHeader.classList.add('-translate-y-full');
+                        isHeaderVisible = false;
+                        setTimeout(updateMapHeight, 300);
+                    }
+                } else if (scrollTop < lastScrollTop) {
+                    // Scrolling up
+                    if (!isHeaderVisible) {
+                        mapHeader.classList.remove('-translate-y-full');
+                        mapHeader.classList.add('translate-y-0');
+                        isHeaderVisible = true;
+                        setTimeout(updateMapHeight, 300);
+                    }
+                }
+            }
+            
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        }
+        
+        // Add scroll listener with throttling
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) {
+                window.cancelAnimationFrame(scrollTimeout);
+            }
+            scrollTimeout = window.requestAnimationFrame(handleScroll);
+        }, { passive: true });
+        
+        function toggleHeaderExpand() {
+            if (!headerCollapsibleContent || window.innerWidth < 640) return;
+            
+            headerExpanded = !headerExpanded;
+            
+            if (headerExpanded) {
+                // Temporarily set to auto to get the actual height
+                headerCollapsibleContent.style.maxHeight = 'none';
+                const height = headerCollapsibleContent.scrollHeight;
+                headerCollapsibleContent.style.maxHeight = '0';
+                // Force reflow
+                headerCollapsibleContent.offsetHeight;
+                // Now animate to full height
+                headerCollapsibleContent.style.maxHeight = height + 'px';
+                headerCollapsibleContent.style.opacity = '1';
+                if (headerArrow) {
+                    headerArrow.style.transform = 'rotate(180deg)';
+                }
+                // Restore padding when expanded
+                if (headerContainer) {
+                    headerContainer.style.paddingTop = '';
+                    headerContainer.style.paddingBottom = '';
+                }
+            } else {
+                headerCollapsibleContent.style.maxHeight = '0';
+                headerCollapsibleContent.style.opacity = '0';
+                if (headerArrow) {
+                    headerArrow.style.transform = 'rotate(0deg)';
+                }
+                // Reduce padding when collapsed
+                if (headerContainer) {
+                    headerContainer.style.paddingTop = '0.5rem';
+                    headerContainer.style.paddingBottom = '0.5rem';
+                }
+            }
+            
+            // Update map height after transition
+            setTimeout(updateMapHeight, 300);
+        }
+        
+        // Set initial padding
+        if (headerContainer && headerExpanded) {
+            headerContainer.style.paddingTop = '';
+            headerContainer.style.paddingBottom = '';
+        }
+        
+        // Toggle on click
+        if (toggleHeader) {
+            toggleHeader.addEventListener('click', toggleHeaderExpand);
+        }
+        
+        // Expand on hover
+        if (mapHeader && window.innerWidth >= 640) {
+            let hoverTimeout;
+            mapHeader.addEventListener('mouseenter', () => {
+                if (!headerExpanded) {
+                    hoverTimeout = setTimeout(() => {
+                        if (!headerExpanded && headerCollapsibleContent) {
+                            headerExpanded = true;
+                            // Get actual height
+                            headerCollapsibleContent.style.maxHeight = 'none';
+                            const height = headerCollapsibleContent.scrollHeight;
+                            headerCollapsibleContent.style.maxHeight = '0';
+                            headerCollapsibleContent.offsetHeight;
+                            headerCollapsibleContent.style.maxHeight = height + 'px';
+                            headerCollapsibleContent.style.opacity = '1';
+                            if (headerArrow) {
+                                headerArrow.style.transform = 'rotate(180deg)';
+                            }
+                            // Restore padding when expanded
+                            if (headerContainer) {
+                                headerContainer.style.paddingTop = '';
+                                headerContainer.style.paddingBottom = '';
+                            }
+                            setTimeout(updateMapHeight, 300);
+                        }
+                    }, 300);
+                }
+            });
+            
+            mapHeader.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimeout);
+                if (headerExpanded && headerCollapsibleContent) {
+                    headerExpanded = false;
+                    headerCollapsibleContent.style.maxHeight = '0';
+                    headerCollapsibleContent.style.opacity = '0';
+                    if (headerArrow) {
+                        headerArrow.style.transform = 'rotate(0deg)';
+                    }
+                    // Reduce padding when collapsed
+                    if (headerContainer) {
+                        headerContainer.style.paddingTop = '0.5rem';
+                        headerContainer.style.paddingBottom = '0.5rem';
+                    }
+                    setTimeout(updateMapHeight, 300);
+                }
+            });
+        }
+        
+        // Filter panel collapse/expand functionality (lateral)
+        const toggleFilterPanel = document.getElementById('toggleFilterPanel');
+        const filterArrow = document.getElementById('filterArrow');
+        const mapSidebar = document.getElementById('mapSidebar');
+        let filterPanelExpanded = false;
+        
+        // Initialize filter panel as collapsed
+        if (filterPanel && mapSidebar && window.innerWidth >= 1024) {
+            filterPanel.style.maxWidth = '0';
+            filterPanel.style.opacity = '0';
+            filterPanel.style.paddingLeft = '0';
+            filterPanel.style.paddingRight = '0';
+            filterPanel.style.overflow = 'hidden';
+            mapSidebar.style.width = '3rem';
+            if (filterArrow) {
+                filterArrow.style.transform = 'rotate(180deg)';
+            }
+            filterPanelExpanded = false;
+        }
+        
+        function toggleFilterPanelExpand() {
+            if (!filterPanel || !mapSidebar || window.innerWidth < 1024) return;
+            
+            filterPanelExpanded = !filterPanelExpanded;
+            
+            if (filterPanelExpanded) {
+                filterPanel.style.maxWidth = '100%';
+                filterPanel.style.opacity = '1';
+                filterPanel.style.paddingLeft = '';
+                filterPanel.style.paddingRight = '';
+                filterPanel.style.overflow = 'auto';
+                mapSidebar.style.width = '24rem';
+                if (filterArrow) {
+                    filterArrow.style.transform = 'rotate(0deg)';
+                }
+            } else {
+                filterPanel.style.maxWidth = '0';
+                filterPanel.style.opacity = '0';
+                filterPanel.style.paddingLeft = '0';
+                filterPanel.style.paddingRight = '0';
+                filterPanel.style.overflow = 'hidden';
+                mapSidebar.style.width = '3rem';
+                if (filterArrow) {
+                    filterArrow.style.transform = 'rotate(180deg)';
+                }
+            }
+        }
+        
+        // Toggle on click
+        if (toggleFilterPanel) {
+            toggleFilterPanel.addEventListener('click', toggleFilterPanelExpand);
+        }
+        
+        // Expand on hover
+        if (mapSidebar && window.innerWidth >= 1024) {
+            let filterHoverTimeout;
+            mapSidebar.addEventListener('mouseenter', () => {
+                if (!filterPanelExpanded) {
+                    filterHoverTimeout = setTimeout(() => {
+                        if (!filterPanelExpanded) {
+                            filterPanelExpanded = true;
+                            filterPanel.style.maxWidth = '100%';
+                            filterPanel.style.opacity = '1';
+                            filterPanel.style.paddingLeft = '';
+                            filterPanel.style.paddingRight = '';
+                            filterPanel.style.overflow = 'auto';
+                            mapSidebar.style.width = '24rem';
+                            if (filterArrow) {
+                                filterArrow.style.transform = 'rotate(0deg)';
+                            }
+                        }
+                    }, 300);
+                }
+            });
+            
+            mapSidebar.addEventListener('mouseleave', () => {
+                clearTimeout(filterHoverTimeout);
+                if (filterPanelExpanded) {
+                    filterPanelExpanded = false;
+                    filterPanel.style.maxWidth = '0';
+                    filterPanel.style.opacity = '0';
+                    filterPanel.style.paddingLeft = '0';
+                    filterPanel.style.paddingRight = '0';
+                    filterPanel.style.overflow = 'hidden';
+                    mapSidebar.style.width = '3rem';
+                    if (filterArrow) {
+                        filterArrow.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+        }
 
         searchInput.addEventListener('input', debounce((event) => {
             mapState.filters.search = event.target.value;
@@ -343,7 +653,6 @@
 
         // Mobile sidebar toggle
         const toggleSidebarButton = document.getElementById('toggleSidebar');
-        const mapSidebar = document.getElementById('mapSidebar');
         if (toggleSidebarButton && mapSidebar) {
             toggleSidebarButton.addEventListener('click', () => {
                 mapSidebar.classList.toggle('hidden');
@@ -357,6 +666,36 @@
                 if (sidebar) {
                     sidebar.classList.remove('hidden');
                 }
+            }
+            
+            // Handle header collapsible content visibility on resize
+            if (headerCollapsibleContent) {
+                if (window.innerWidth >= 640) {
+                    // Desktop: respect collapsed state
+                    if (!headerExpanded) {
+                        headerCollapsibleContent.style.maxHeight = '0';
+                        headerCollapsibleContent.style.opacity = '0';
+                    } else {
+                        headerCollapsibleContent.style.maxHeight = 'none';
+                        headerCollapsibleContent.style.opacity = '1';
+                    }
+                } else {
+                    // Mobile: always visible
+                    headerCollapsibleContent.style.maxHeight = 'none';
+                    headerCollapsibleContent.style.opacity = '1';
+                    headerExpanded = true;
+                }
+            }
+            
+            // Update map height on resize
+            updateMapHeight();
+            
+            // Reset scroll state on resize
+            lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (lastScrollTop <= 10 && !isHeaderVisible) {
+                mapHeader.classList.remove('-translate-y-full');
+                mapHeader.classList.add('translate-y-0');
+                isHeaderVisible = true;
             }
         });
 

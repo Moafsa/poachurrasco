@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 trait HandlesMediaUploads
 {
+    /**
+     * Get the storage service instance
+     */
+    protected function getStorageService(): StorageService
+    {
+        return app(StorageService::class);
+    }
+
     protected function storeImage(?UploadedFile $file, string $directory): ?string
     {
-        if (!$file instanceof UploadedFile) {
-            return null;
-        }
-
-        return $file->store($directory, 'public');
+        return $this->getStorageService()->storeImage($file, $directory);
     }
 
     /**
@@ -21,30 +25,17 @@ trait HandlesMediaUploads
      */
     protected function storeImageCollection(?array $files, string $directory): ?array
     {
-        if (empty($files)) {
-            return null;
-        }
-
-        $paths = [];
-
-        foreach ($files as $file) {
-            if ($file instanceof UploadedFile) {
-                $paths[] = $file->store($directory, 'public');
-            }
-        }
-
-        return $paths ?: null;
+        return $this->getStorageService()->storeImageCollection($files, $directory);
     }
 
     protected function deleteStoredFiles(?array $paths): void
     {
-        if (empty($paths)) {
-            return;
-        }
+        $this->getStorageService()->deleteStoredFiles($paths);
+    }
 
-        foreach ($paths as $path) {
-            Storage::disk('public')->delete($path);
-        }
+    protected function deleteFile(?string $path): void
+    {
+        $this->getStorageService()->deleteFile($path);
     }
 }
 

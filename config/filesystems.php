@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        'minio' => [
+            'driver' => 's3',
+            'key' => env('MINIO_ACCESS_KEY', 'EwsP5sPulj1RNxy76tJA'),
+            'secret' => env('MINIO_SECRET_KEY', 'w5RtVLMjx3DwP18L0BJhe5weU8ykL1EXCroXtanT'),
+            'region' => env('MINIO_REGION', 'us-east-1'),
+            'bucket' => env('MINIO_BUCKET', 'poachurras'),
+            'endpoint' => env('MINIO_ENDPOINT', 'https://winio.conext.click'),
+            'url' => env('MINIO_URL', 'https://winio.conext.click/poachurras'),
+            'use_path_style_endpoint' => env('MINIO_USE_PATH_STYLE', true),
+            'throw' => false,
+            'report' => false,
+            'visibility' => 'public',
+        ],
+
     ],
 
     /*

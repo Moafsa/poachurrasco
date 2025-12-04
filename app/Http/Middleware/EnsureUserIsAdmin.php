@@ -15,7 +15,23 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
+        \Log::info('EnsureUserIsAdmin middleware', [
+            'authenticated' => auth()->check(),
+            'user_id' => auth()->id(),
+            'user_role' => auth()->check() ? auth()->user()->role : 'none',
+            'is_admin' => auth()->check() ? auth()->user()->isAdmin() : false,
+        ]);
+        
+        if (!auth()->check()) {
+            \Log::warning('User not authenticated');
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+        
+        if (!auth()->user()->isAdmin()) {
+            \Log::warning('User is not admin', [
+                'user_id' => auth()->id(),
+                'user_role' => auth()->user()->role,
+            ]);
             abort(403, 'Unauthorized. Admin access required.');
         }
 

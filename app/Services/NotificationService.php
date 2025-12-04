@@ -70,14 +70,32 @@ class NotificationService
             return;
         }
 
-        // TODO: Implement email sending with Mail facade
-        // For now, just mark as sent
-        $notification->update([
-            'sent_email' => true,
-            'email_sent_at' => now(),
-        ]);
+        try {
+            Mail::to($user->email)->send(new \App\Mail\NotificationMail($notification));
+            
+            $notification->update([
+                'sent_email' => true,
+                'email_sent_at' => now(),
+            ]);
 
-        Log::info("Email notification sent to {$user->email}: {$notification->title}");
+            Log::info("Email notification sent successfully", [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'notification_id' => $notification->id,
+                'title' => $notification->title,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send email notification", [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'notification_id' => $notification->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Don't mark as sent if it failed
+            throw $e;
+        }
     }
 
     /**
@@ -121,6 +139,7 @@ class NotificationService
             'cancelled' => 'Seu pedido foi cancelado.',
         ];
 
+        // Create database notification
         $this->createNotification([
             'user_id' => $order->user_id,
             'establishment_id' => $order->establishment_id,
@@ -132,8 +151,28 @@ class NotificationService
                 'order_number' => $order->order_number,
                 'status' => $order->status,
             ],
-            'channels' => ['database', 'email'],
+            'channels' => ['database'],
         ]);
+
+        // Send dedicated order status email
+        if ($order->user_id) {
+            $user = User::find($order->user_id);
+            if ($user && $user->email) {
+                try {
+                    Mail::to($user->email)->send(new \App\Mail\OrderStatusMail($order, $order->status));
+                    Log::info("Order status email sent", [
+                        'order_id' => $order->id,
+                        'status' => $order->status,
+                        'email' => $user->email,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to send order status email", [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
     }
 
     /**
@@ -141,19 +180,42 @@ class NotificationService
      */
     public function notifyNewOrder(Order $order): void
     {
-        $this->createNotification([
-            'user_id' => $order->establishment->user_id ?? null,
-            'establishment_id' => $order->establishment_id,
-            'order_id' => $order->id,
-            'type' => 'order_created',
-            'title' => 'Novo Pedido Recebido',
-            'message' => "Novo pedido #{$order->order_number} recebido de {$order->customer_name}.",
-            'data' => [
-                'order_number' => $order->order_number,
-                'total' => $order->total,
-            ],
-            'channels' => ['database', 'email'],
-        ]);
+        $establishmentUserId = $order->establishment->user_id ?? null;
+
+        // Create database notification for establishment
+        if ($establishmentUserId) {
+            $this->createNotification([
+                'user_id' => $establishmentUserId,
+                'establishment_id' => $order->establishment_id,
+                'order_id' => $order->id,
+                'type' => 'order_created',
+                'title' => 'Novo Pedido Recebido',
+                'message' => "Novo pedido #{$order->order_number} recebido de {$order->customer_name}.",
+                'data' => [
+                    'order_number' => $order->order_number,
+                    'total' => $order->total,
+                ],
+                'channels' => ['database'],
+            ]);
+
+            // Send dedicated new order email to establishment
+            $establishmentUser = User::find($establishmentUserId);
+            if ($establishmentUser && $establishmentUser->email) {
+                try {
+                    Mail::to($establishmentUser->email)->send(new \App\Mail\NewOrderMail($order));
+                    Log::info("New order email sent to establishment", [
+                        'order_id' => $order->id,
+                        'establishment_id' => $order->establishment_id,
+                        'email' => $establishmentUser->email,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Failed to send new order email to establishment", [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
     }
 
     /**
