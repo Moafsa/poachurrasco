@@ -229,3 +229,16 @@ php artisan tinker
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+

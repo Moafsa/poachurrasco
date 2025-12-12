@@ -24,7 +24,7 @@
     use Illuminate\Support\Str;
 @endphp
 <div class="min-h-screen w-full overflow-x-hidden">
-    <section id="hero-section-main" class="relative min-h-[70vh] sm:min-h-[85vh] md:min-h-[90vh] overflow-hidden w-full" role="banner" aria-label="Hero section">
+    <section id="hero-section-main" class="relative min-h-[70vh] sm:min-h-[85vh] md:min-h-[90vh] overflow-hidden w-full mt-16 sm:mt-20" role="banner" aria-label="Hero section">
         <!-- Background Image/Video with Parallax Effect -->
         <div class="absolute inset-0 hero-background" style="z-index: 0;">
             @php
@@ -44,6 +44,18 @@
                             $videoMedia = $heroSection->media->where('type', 'video')->sortBy('display_order')->first();
                             $primaryImage = ($imageMedia && isset($imageMedia->media_path)) ? $imageMedia->media_path : null;
                             $primaryVideo = ($videoMedia && isset($videoMedia->media_path)) ? $videoMedia->media_path : null;
+                            
+                            // Helper function to get media URL
+                            $getMediaUrl = function($path) {
+                                if (!$path) return null;
+                                $disk = env('STORAGE_DISK', 'public');
+                                $url = Storage::disk($disk)->url($path);
+                                // Se a URL usar winio, corrigir para ws3
+                                if (str_contains($url, 'winio.conext.click')) {
+                                    $url = str_replace('winio.conext.click', 'ws3.conext.click', $url);
+                                }
+                                return $url;
+                            };
                         }
                     } catch (\Exception $e) {
                         // If there's an error accessing media, fall back to local files
@@ -71,13 +83,13 @@
                     loop 
                     playsinline
                     class="h-full w-full object-cover hero-video"
-                    poster="{{ $primaryImage ? Storage::disk('public')->url($primaryImage) : $unsplashImage }}"
+                    poster="{{ $primaryImage ? $getMediaUrl($primaryImage) : $unsplashImage }}"
                     aria-label="{{ $heroSection->title ?? 'Hero video background' }}"
                 >
-                    <source src="{{ Storage::disk('public')->url($primaryVideo) }}" type="video/mp4">
+                    <source src="{{ $getMediaUrl($primaryVideo) }}" type="video/mp4">
                     @if($primaryImage)
                         <img 
-                            src="{{ Storage::disk('public')->url($primaryImage) }}" 
+                            src="{{ $getMediaUrl($primaryImage) }}" 
                             alt="{{ $heroSection->title ?? 'Hero image' }}"
                             class="h-full w-full object-cover hero-image"
                             loading="eager"
@@ -92,7 +104,7 @@
                         <div class="hero-slide {{ $index === 0 ? 'active' : '' }}" style="display: {{ $index === 0 ? 'block' : 'none' }};">
                             @if($media->type === 'image')
                                 <img 
-                                    src="{{ Storage::disk('public')->url($media->media_path) }}" 
+                                    src="{{ $getMediaUrl($media->media_path) }}" 
                                     alt="{{ $media->alt_text ?? $heroSection->title }}"
                                     class="h-full w-full object-cover hero-image"
                                     loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
@@ -106,7 +118,7 @@
                                     playsinline
                                     class="h-full w-full object-cover hero-video"
                                 >
-                                    <source src="{{ Storage::disk('public')->url($media->media_path) }}" type="video/mp4">
+                                    <source src="{{ $getMediaUrl($media->media_path) }}" type="video/mp4">
                                 </video>
                             @endif
                         </div>
@@ -115,7 +127,7 @@
             @elseif($useDatabaseHero && $heroSection && isset($heroSection->type) && $primaryImage)
                 <!-- Single image from database -->
                 <img 
-                    src="{{ Storage::disk('public')->url($primaryImage) }}" 
+                    src="{{ $getMediaUrl($primaryImage) }}" 
                     alt="{{ $heroSection->title ?? 'Hero image' }}"
                     class="h-full w-full object-cover hero-image"
                     loading="eager"
@@ -238,7 +250,7 @@
         </div>
 
         <!-- Content -->
-        <div class="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20 text-center w-full">
+        <div class="relative z-10 mx-auto flex max-w-7xl flex-col justify-center px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20 text-center w-full min-h-[70vh] sm:min-h-[85vh] md:min-h-[90vh]">
             <!-- Badge -->
             <div class="animate-fade-in-up mb-6">
                 <span class="inline-flex items-center gap-2 rounded-full bg-orange-500/20 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-orange-200 backdrop-blur-sm">
@@ -360,8 +372,8 @@
         </div>
 
         <!-- Scroll Indicator -->
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-            <svg class="h-8 w-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 animate-bounce pointer-events-none">
+            <svg class="h-6 w-6 sm:h-8 sm:w-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
         </div>
@@ -388,7 +400,7 @@
             <div class="mt-6 sm:mt-8 md:mt-10 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 @forelse ($featuredEstablishments as $establishment)
                     <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                        <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100">
+                        <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                             @php
                                 $photo = $establishment->photo_urls[0] ?? null;
                             @endphp
@@ -402,7 +414,7 @@
                             @else
                                 <div class="flex h-full w-full items-center justify-center text-5xl">🥩</div>
                             @endif
-                            <div class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-orange-600">
+                            <div class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-orange-600 z-10">
                                 {{ ucfirst($establishment->category ?? 'churrasco') }}
                             </div>
                         </div>
@@ -465,8 +477,8 @@
 
             <div class="mt-6 sm:mt-8 md:mt-10 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 @forelse ($highlightProducts as $product)
-                    <article class="flex h-full flex-col rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow">
-                        <div class="relative h-40 bg-gradient-to-br from-orange-100 to-red-100">
+                    <article class="flex h-full flex-col rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow overflow-hidden">
+                        <div class="relative h-40 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                             @php
                                 $image = $product->images[0] ?? null;
                             @endphp
@@ -481,7 +493,7 @@
                                 <div class="flex h-full w-full items-center justify-center text-4xl">🔥</div>
                             @endif
                             @if ($product->is_featured)
-                                <div class="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white">
+                                <div class="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white z-10">
                                     Destaque
                                 </div>
                             @endif
@@ -658,6 +670,31 @@
         <!-- Decorative background elements -->
         <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-amber-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-200/30 to-orange-200/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        @php
+            // First try to get seal from SiteContent (managed by super admin)
+            $sealContent = \App\Models\SiteContent::where('key', 'quality_seal')->first();
+            $sealImageUrl = $sealContent ? $sealContent->content : null;
+            
+            // Fallback to config if not set in super admin
+            if (!$sealImageUrl) {
+                $sealAssetKey = config('branding.quality_seal_logo_key', 'expo-churrasco-seal.png');
+                $sealLocalPath = public_path('images/' . $sealAssetKey);
+                $sealLocalUrl = file_exists($sealLocalPath) ? asset('images/' . $sealAssetKey) : null;
+                $minioSealUrl = null;
+
+                try {
+                    $minioDisk = Storage::disk('minio');
+                    if ($minioDisk->exists($sealAssetKey)) {
+                        $minioSealUrl = $minioDisk->url($sealAssetKey);
+                    }
+                } catch (\Throwable $e) {
+                    $minioSealUrl = null;
+                }
+
+                $defaultSealUrl = config('branding.quality_seal_logo_default_url');
+                $sealImageUrl = $minioSealUrl ?? $sealLocalUrl ?? $defaultSealUrl;
+            }
+        @endphp
         
         <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
             <!-- Header -->
@@ -665,10 +702,18 @@
                 <div class="inline-flex items-center justify-center mb-6">
                     <div class="relative">
                         <!-- Premium Seal Badge -->
-                        <div class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-2xl border-8 border-white/90 relative transform rotate-12 hover:rotate-0 transition-transform duration-500">
-                            <svg class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                            </svg>
+                        <div class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 bg-black rounded-full flex items-center justify-center shadow-2xl border-8 border-white/90 relative transform rotate-12 hover:rotate-0 transition-transform duration-500">
+                            @if($sealImageUrl)
+                                <img
+                                    src="{{ $sealImageUrl }}"
+                                    alt="Selo Expo Churrasco"
+                                    class="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-cover rounded-full border-4 border-white/80 shadow-lg"
+                                >
+                            @else
+                                <svg class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                </svg>
+                            @endif
                             <div class="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                                 <svg class="w-5 h-5 text-yellow-900" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -743,7 +788,7 @@
                             <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border-2 border-orange-200 bg-white shadow-xl transition-all hover:-translate-y-2 hover:shadow-2xl hover:border-orange-400">
                                 <!-- Quality Seal Badge -->
                                 <div class="absolute top-4 right-4 z-10">
-                                    <div class="w-16 h-16 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white transform group-hover:scale-110 transition-transform">
+                                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center shadow-lg border-4 border-white transform group-hover:scale-110 transition-transform">
                                         <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                                         </svg>
@@ -755,7 +800,7 @@
                                     </div>
                                 </div>
 
-                                <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100">
+                                <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                                     @php
                                         $photo = $establishment->photo_urls[0] ?? null;
                                     @endphp

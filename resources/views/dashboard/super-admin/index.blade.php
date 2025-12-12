@@ -8,9 +8,16 @@
     <div class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-gray-900">Super Admin Dashboard</h1>
-                    <p class="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Manage site content and hero sections</p>
+                <div class="flex items-center gap-4">
+                    <img
+                        src="{{ asset('images/icons/icon-192x192.png') }}"
+                        alt="{{ config('app.name', 'Porto Alegre Capital Mundial do Churrasco') }} logo"
+                        class="h-12 w-12 sm:h-14 sm:w-14 object-contain rounded-xl shadow-md border border-gray-100 bg-white"
+                    >
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-black text-gray-900">Super Admin Dashboard</h1>
+                        <p class="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Manage site content and hero sections</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -31,13 +38,37 @@
         @endif
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Branding Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Branding</h2>
+                        <p class="text-sm text-gray-600 mt-1">Trocar logo do site e selo de qualidade</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-2xl font-bold text-gray-900">2</span>
+                    <a href="{{ route('super-admin.branding') }}" class="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                        Gerenciar
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
             <!-- Hero Sections Card -->
             <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-xl font-bold text-gray-900">Hero Sections</h2>
-                        <p class="text-sm text-gray-600 mt-1">Manage hero images, videos, and slideshows</p>
+                        <p class="text-sm text-gray-600 mt-1">Gerenciar imagens, vídeos e slideshows do hero</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,8 +91,8 @@
             <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">Site Content</h2>
-                        <p class="text-sm text-gray-600 mt-1">Edit texts and content across the site</p>
+                        <h2 class="text-xl font-bold text-gray-900">Conteúdo do Site</h2>
+                        <p class="text-sm text-gray-600 mt-1">Editar textos e conteúdo em todo o site</p>
                     </div>
                     <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
                         <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,8 +166,6 @@
     </div>
 </div>
 @endsection
-
-
 
 
 

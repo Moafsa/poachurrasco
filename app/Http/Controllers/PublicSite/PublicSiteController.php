@@ -238,6 +238,72 @@ class PublicSiteController extends Controller
     }
 
     /**
+     * Render the narrative page about Porto Alegre history and its barbecue legacy.
+     */
+    public function portoAlegreHistory()
+    {
+        $timeline = [
+            [
+                'year' => 'before 1700',
+                'title' => 'Indigenous roots and riverside settlement',
+                'description' => 'Archaeological evidence shows human groups near the Guaíba estuary and Lagoa dos Patos for more than 11,000 years, with Guarani, Kaingang, and Charrúa families shaping the earliest cultural layers.',
+            ],
+            [
+                'year' => '1772',
+                'title' => 'Freguesia de São Francisco do Porto dos Casais',
+                'description' => 'Portuguese estancieiros formalized the settlement as a parish, planting the seeds for what would become Porto Alegre with a grid of streets anchored by the central church square.',
+            ],
+            [
+                'year' => '19th century',
+                'title' => 'River trade and immigrant influx',
+                'description' => 'The Jacuí River and Lagoa dos Patos confluence turned the city into a commercial hub, attracting Gaucho, German, Italian, and Azorean settlers who expanded the port, craftsmanship, and cultural pluralism.',
+            ],
+            [
+                'year' => '20th century',
+                'title' => 'Urban modernization and civic culture',
+                'description' => 'Industry, tramways, universities, and theaters reshaped the skyline while the city preserved its civic rituals and the communal churrasco tradition.',
+            ],
+            [
+                'year' => '21st century',
+                'title' => 'From local ritual to global brand',
+                'description' => 'Porto Alegre doubled down on its barbecue culture, hosting public festivals and cultivating craftsmanship that later led to municipal proclamations and global recognition.',
+            ],
+        ];
+
+        $bbqHighlights = [
+            [
+                'title' => 'Capital Mundial do Churrasco seal',
+                'description' => 'In April 2023 the city hall launched the official seal "Porto Alegre Capital Mundial do Churrasco" to recognize the deep tradition, the variety of cuts, and the ritual of sharing meat across neighborhoods.',
+            ],
+            [
+                'title' => 'Dense churrascaria ecosystem',
+                'description' => 'Municipal statistics highlight more than 100 registered churrascarias and the highest concentration of barbecue grills per inhabitant in Brazil, reinforcing the city’s leadership at the intersection of craftsmanship and hospitality.',
+            ],
+            [
+                'title' => 'Paleta Atlântida and open flame festivals',
+                'description' => 'Events such as the June 2025 Paleta Atlântida at Cais Mauá gathered over a thousand assadores along 600 meters of grills and welcomed thousands of visitors, showcasing Porto Alegre’s astrophile of flame-based cuisine.',
+            ],
+        ];
+
+        $sources = [
+            [
+                'label' => 'História de Porto Alegre – Wikipedia',
+                'url' => 'https://pt.wikipedia.org/wiki/Hist%C3%B3ria_de_Porto_Alegre',
+            ],
+            [
+                'label' => 'Prefeitura de Porto Alegre – Selo Capital Mundial do Churrasco',
+                'url' => 'https://prefeitura.poa.br/smdete/noticias/prefeitura-lanca-o-selo-porto-alegre-capital-mundial-do-churrasco',
+            ],
+            [
+                'label' => 'Prefeitura de Porto Alegre – Paleta Atlântida 2025',
+                'url' => 'https://www.prefeitura.poa.br/smdete/noticias/paleta-atlantida-em-porto-alegre-ocorre-neste-sabado-no-cais-maua',
+            ],
+        ];
+
+        return view('public.porto-alegre-history', compact('timeline', 'bbqHighlights', 'sources'));
+    }
+
+    /**
      * Render the unified search page.
      */
     public function search(Request $request)

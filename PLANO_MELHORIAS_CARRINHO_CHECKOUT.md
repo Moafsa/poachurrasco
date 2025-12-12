@@ -126,3 +126,16 @@ Implementar melhorias de escalabilidade, performance e manutenibilidade no siste
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+

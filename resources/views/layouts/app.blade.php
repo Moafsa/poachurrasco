@@ -166,10 +166,23 @@
                     <div class="flex items-center flex-1 min-w-0 pr-2 overflow-hidden">
                         <!-- Logo -->
                         <div class="flex-shrink-0 flex items-center">
-                            <a href="{{ route('home') }}" class="flex items-center">
-                                <div>
+                            <a href="{{ route('home') }}" class="flex items-center gap-2">
+                                @php
+                                    $logoContent = \App\Models\SiteContent::where('key', 'site_logo')->first();
+                                    $logoUrl = $logoContent ? $logoContent->content : null;
+                                @endphp
+                                @if($logoUrl)
+                                    <img 
+                                        src="{{ $logoUrl }}" 
+                                        alt="{{ config('app.name', 'Porto Alegre Capital Mundial do Churrasco') }}"
+                                        class="h-16 w-auto sm:h-20 md:h-24 max-w-[200px] sm:max-w-[280px] md:max-w-[350px] object-contain"
+                                        style="max-height: 6rem;"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                    >
+                                    <div style="display: none;" class="text-[8px] xs:text-[9px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-black text-gray-900 leading-tight max-w-[90px] xs:max-w-[110px] sm:max-w-[130px] md:max-w-[160px] lg:max-w-none truncate">Porto Alegre Capital Mundial do Churrasco</div>
+                                @else
                                     <div class="text-[8px] xs:text-[9px] sm:text-xs md:text-sm lg:text-base xl:text-lg font-black text-gray-900 leading-tight max-w-[90px] xs:max-w-[110px] sm:max-w-[130px] md:max-w-[160px] lg:max-w-none truncate">Porto Alegre Capital Mundial do Churrasco</div>
-                                </div>
+                                @endif
                             </a>
                         </div>
 
@@ -239,7 +252,12 @@
 
                             <!-- Buttons -->
                             <div class="flex items-center space-x-2 flex-shrink-0">
-                                @if(!request()->routeIs('dashboard'))
+                                @if(auth()->user()->isAdmin() && !request()->routeIs('super-admin.index'))
+                                <a href="{{ route('super-admin.index') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-3 lg:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
+                                    Super Admin
+                                </a>
+                                @endif
+                                @if(!request()->routeIs('dashboard') && !request()->routeIs('super-admin.index'))
                                 <a href="{{ route('dashboard') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 lg:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
                                     Painel
                                 </a>
@@ -350,7 +368,12 @@
                                     <div class="text-base font-medium text-gray-800">{{ auth()->user()->name }}</div>
                                 </div>
                             </div>
-                            @if(!request()->routeIs('dashboard'))
+                            @if(auth()->user()->isAdmin() && !request()->routeIs('super-admin.index'))
+                            <a href="{{ route('super-admin.index') }}" class="text-gray-700 hover:text-purple-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium">
+                                Super Admin
+                            </a>
+                            @endif
+                            @if(!request()->routeIs('dashboard') && !request()->routeIs('super-admin.index'))
                             <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-churrasco-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium">
                                 Painel
                             </a>
@@ -380,7 +403,7 @@
         </nav>
 
         <!-- Page Content -->
-        <main class="flex-grow pt-16 sm:pt-20 pb-20 lg:pb-0">
+        <main class="flex-grow @if(!request()->routeIs('home')) pt-16 sm:pt-20 @endif pb-20 lg:pb-0">
             @yield('content')
         </main>
 

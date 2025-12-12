@@ -13,7 +13,9 @@ class StorageService
      */
     public function getMediaDisk(): string
     {
-        return env('STORAGE_DISK', 'public');
+        $disk = env('STORAGE_DISK', 'public');
+        Log::info("Using storage disk: {$disk}");
+        return $disk;
     }
 
     /**
@@ -21,33 +23,100 @@ class StorageService
      */
     public function storeImage(?UploadedFile $file, string $directory): ?string
     {
+        Log::info('=== StorageService::storeImage called ===', [
+            'file_is_null' => is_null($file),
+            'file_is_uploaded_file' => $file instanceof UploadedFile,
+            'directory' => $directory,
+        ]);
+        
         if (!$file instanceof UploadedFile) {
+            Log::error('File is not an UploadedFile instance', [
+                'file_type' => gettype($file),
+                'file_class' => is_object($file) ? get_class($file) : 'not_object',
+            ]);
             return null;
         }
 
+        $configuredDisk = $this->getMediaDisk();
+        Log::info('Using disk', ['disk' => $configuredDisk]);
+        
+        // Se for MinIO, tenta primeiro, mas se falhar, usa public imediatamente
+        if ($configuredDisk === 'minio') {
+            try {
+                Log::info("Attempting to store image in MinIO", [
+                    'directory' => $directory,
+                    'file_size' => $file->getSize(),
+                    'file_name' => $file->getClientOriginalName(),
+                ]);
+                
+                // Timeout de 10 segundos para MinIO
+                $path = $file->store($directory, 'minio');
+                
+                Log::info("Image stored successfully in MinIO", [
+                    'path' => $path,
+                    'disk' => 'minio',
+                ]);
+
+                return $path;
+            } catch (\Exception $e) {
+                Log::error("Failed to store image in MinIO, falling back to public", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                // Fallback imediato para public disk
+                try {
+                    $path = $file->store($directory, 'public');
+                    Log::info("Image stored successfully in public disk (fallback)", [
+                        'path' => $path,
+                    ]);
+                    return $path;
+                } catch (\Exception $e2) {
+                    Log::error("Failed to store image in public disk too", [
+                        'error' => $e2->getMessage(),
+                    ]);
+                    throw $e2;
+                }
+            }
+        }
+
+        // Para outros discos (public, etc)
         try {
-            $disk = $this->getMediaDisk();
-            $path = $file->store($directory, $disk);
+            Log::info('Attempting to store file', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'directory' => $directory,
+                'disk' => $configuredDisk,
+            ]);
+            
+            $path = $file->store($directory, $configuredDisk);
             
             Log::info("Image stored successfully", [
                 'path' => $path,
-                'disk' => $disk,
+                'disk' => $configuredDisk,
                 'directory' => $directory,
+                'full_path' => Storage::disk($configuredDisk)->path($path),
             ]);
+            
+            // Verificar se o arquivo realmente existe
+            if (Storage::disk($configuredDisk)->exists($path)) {
+                Log::info('File confirmed to exist after storage', [
+                    'path' => $path,
+                    'size' => Storage::disk($configuredDisk)->size($path),
+                ]);
+            } else {
+                Log::error('File does not exist after storage!', ['path' => $path]);
+            }
 
             return $path;
         } catch (\Exception $e) {
             Log::error("Failed to store image", [
                 'error' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
                 'directory' => $directory,
-                'disk' => $this->getMediaDisk(),
+                'disk' => $configuredDisk,
             ]);
-
-            // Fallback to public disk if cloud storage fails
-            if ($this->getMediaDisk() !== 'public') {
-                Log::warning("Falling back to public disk", ['original_disk' => $this->getMediaDisk()]);
-                return $file->store($directory, 'public');
-            }
 
             throw $e;
         }
@@ -196,6 +265,14 @@ class StorageService
         }
     }
 }
+
+
+
+
+
+
+
+
 
 
 

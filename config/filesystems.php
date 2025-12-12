@@ -66,8 +66,8 @@ return [
             'secret' => env('MINIO_SECRET_KEY', 'w5RtVLMjx3DwP18L0BJhe5weU8ykL1EXCroXtanT'),
             'region' => env('MINIO_REGION', 'us-east-1'),
             'bucket' => env('MINIO_BUCKET', 'poachurras'),
-            'endpoint' => env('MINIO_ENDPOINT', 'https://winio.conext.click'),
-            'url' => env('MINIO_URL', 'https://winio.conext.click/poachurras'),
+            'endpoint' => env('MINIO_ENDPOINT', 'https://ws3.conext.click'), // API S3 via Traefik
+            'url' => env('MINIO_URL', 'https://ws3.conext.click/poachurras'),
             'use_path_style_endpoint' => env('MINIO_USE_PATH_STYLE', true),
             'throw' => false,
             'report' => false,

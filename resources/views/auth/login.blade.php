@@ -62,7 +62,6 @@
             <!-- Email Login Form -->
             <form class="space-y-6" method="POST" action="{{ route('login.post') }}" id="loginForm">
                 @csrf
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">
                         Email
@@ -120,4 +119,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Refresh CSRF token periodically to prevent 419 errors
+    (function() {
+        let csrfToken = document.querySelector('input[name="_token"]');
+        if (!csrfToken) return;
+        
+        // Refresh token every 2 minutes
+        setInterval(function() {
+            fetch('/login', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newToken = doc.querySelector('input[name="_token"]');
+                if (newToken && newToken.value !== csrfToken.value) {
+                    csrfToken.value = newToken.value;
+                    // Also update meta tag if exists
+                    const metaToken = document.querySelector('meta[name="csrf-token"]');
+                    if (metaToken) {
+                        metaToken.setAttribute('content', newToken.value);
+                    }
+                }
+            })
+            .catch(err => console.log('CSRF token refresh failed:', err));
+        }, 120000); // 2 minutes
+    })();
+</script>
 @endsection

@@ -25,7 +25,12 @@
         @endif
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($heroSections as $hero)
+            @php
+                // Debug: verificar se a variável existe
+                $heroSectionsCount = isset($heroSections) ? $heroSections->count() : 0;
+            @endphp
+            @if(isset($heroSections) && $heroSections->count() > 0)
+                @foreach($heroSections as $hero)
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
                     <div class="relative h-48 bg-gray-100">
                         @if($hero->primary_image)
@@ -66,18 +71,29 @@
                         </div>
                     </div>
                 </div>
-            @empty
+                @endforeach
+            @else
                 <div class="col-span-full text-center py-12 bg-white rounded-2xl shadow-lg">
                     <p class="text-gray-500 mb-4">No hero sections created yet</p>
                     <a href="{{ route('super-admin.hero-section.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                         Create First Hero Section
                     </a>
                 </div>
-            @endforelse
+            @endif
         </div>
     </div>
 </div>
 @endsection
+
+
+
+
+
+
+
+
+
+
 
 
 

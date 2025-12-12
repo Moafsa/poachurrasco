@@ -26,6 +26,7 @@ use App\Models\User;
 Route::get('/secretaria-turismo', [PublicSiteController::class, 'tourismSecretariat'])->name('tourism.secretariat');
 Route::get('/', [PublicSiteController::class, 'home'])->name('home');
 Route::get('/mapa', [PublicSiteController::class, 'map'])->name('mapa');
+Route::get('/historia-de-porto-alegre', [PublicSiteController::class, 'portoAlegreHistory'])->name('porto-alegre.history');
 
 // Public API for map data
 Route::get('/api/establishments/map/data', [EstablishmentController::class, 'mapData'])->name('api.establishments.map.data');
@@ -132,12 +133,28 @@ Route::post('/login', function (Request $request) {
 
         try {
             $user = Auth::user();
-            \Log::info('Redirecting user', ['role' => $user->role ?? 'none']);
+            \Log::info('Redirecting user', [
+                'user_id' => $user->id,
+                'role' => $user->role ?? 'none',
+                'is_admin' => $user->isAdmin(),
+            ]);
             
             // Redirect admin users to super-admin dashboard
             if ($user && $user->isAdmin()) {
-                \Log::info('Redirecting admin to super-admin dashboard');
-                return redirect()->intended(route('super-admin.index'));
+                \Log::info('Redirecting admin to super-admin dashboard', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ]);
+                
+                // Use direct redirect instead of intended to ensure it works
+                $redirectUrl = route('super-admin.index');
+                \Log::info('Super admin route URL', ['url' => $redirectUrl]);
+                
+                // Clear any intended URL to avoid conflicts
+                $request->session()->forget('url.intended');
+                
+                return redirect($redirectUrl);
             }
             
             \Log::info('Redirecting to dashboard');
@@ -148,6 +165,7 @@ Route::post('/login', function (Request $request) {
             // Fallback: check if user is admin
             $user = Auth::user();
             if ($user && $user->isAdmin()) {
+                \Log::info('Fallback: Redirecting admin to super-admin');
                 return redirect('/super-admin');
             }
             
@@ -359,4 +377,11 @@ Route::middleware(['auth', 'admin'])->prefix('super-admin')->name('super-admin.'
     Route::post('/hero-section/{heroSection}/upload-media', [SuperAdminController::class, 'uploadHeroMedia'])->name('hero-section.upload-media');
     Route::delete('/hero-section/media/{media}', [SuperAdminController::class, 'deleteHeroMedia'])->name('hero-section.delete-media');
     Route::post('/hero-section/{heroSection}/update-media-order', [SuperAdminController::class, 'updateHeroMediaOrder'])->name('hero-section.update-media-order');
+    
+    // Branding routes (Logo and Seal)
+    Route::get('/branding', [SuperAdminController::class, 'branding'])->name('branding');
+    Route::post('/branding/logo', [SuperAdminController::class, 'uploadLogo'])->name('branding.logo.upload');
+    Route::post('/branding/seal', [SuperAdminController::class, 'uploadSeal'])->name('branding.seal.upload');
+    Route::delete('/branding/logo', [SuperAdminController::class, 'deleteLogo'])->name('branding.logo.delete');
+    Route::delete('/branding/seal', [SuperAdminController::class, 'deleteSeal'])->name('branding.seal.delete');
 });

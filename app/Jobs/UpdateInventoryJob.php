@@ -67,3 +67,16 @@ class UpdateInventoryJob implements ShouldQueue
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+

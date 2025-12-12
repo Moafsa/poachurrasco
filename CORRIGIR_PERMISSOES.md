@@ -111,14 +111,22 @@ Depois de corrigir as permissões:
 
 ## 📝 Nota Técnica
 
-O problema ocorre porque:
+O problema ocorre porque o container precisa escrever em:
 
-1. O volume Docker `poachurrasco_data:/var/www/storage` é montado no container
-2. Quando o volume é criado pelo Docker, ele pode ter permissões diferentes
+1. O diretório `./storage` é bind montado no container como `/var/www/storage`
+2. Se o host Windows/volume não expõe permissões de escrita para `www-data`, o PHP não consegue gravar
 3. O PHP-FPM roda como `www-data` e precisa de permissão de escrita
 4. O Laravel compila as views Blade e salva em `storage/framework/views`
 
 O Dockerfile foi atualizado para garantir que as permissões sejam corrigidas automaticamente toda vez que o container iniciar.
+
+
+
+
+
+
+
+
 
 
 
