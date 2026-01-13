@@ -772,16 +772,34 @@
     });
 
     window.initMap = function initMap() {
+        console.log('✅ Google Maps API carregada com sucesso!');
+        
+        // Verificar se o elemento do mapa existe
+        const mapElement = document.getElementById('map');
+        if (!mapElement) {
+            console.error('❌ Elemento #map não encontrado no DOM');
+            return;
+        }
+
         const portoAlegre = { lat: -30.0346, lng: -51.2177 };
 
-        mapState.map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 13,
-            center: portoAlegre,
-            styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
-        });
+        try {
+            mapState.map = new google.maps.Map(mapElement, {
+                zoom: 13,
+                center: portoAlegre,
+                styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
+            });
 
-        mapState.infoWindow = new google.maps.InfoWindow();
-        fetchEstablishments();
+            mapState.infoWindow = new google.maps.InfoWindow();
+            console.log('✅ Mapa inicializado com sucesso');
+            fetchEstablishments();
+        } catch (error) {
+            console.error('❌ Erro ao inicializar o mapa:', error);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg';
+            errorDiv.innerHTML = '<strong>Erro ao inicializar o mapa:</strong> ' + error.message;
+            document.body.appendChild(errorDiv);
+        }
     };
 
     async function fetchEstablishments() {
@@ -1164,10 +1182,10 @@
                 ? `<span class="text-xs font-medium uppercase text-red-500">${establishment.business_status}</span>`
                 : '';
             
-            // Get first photo URL if available
+            // Get first photo URL if available (use proxy route)
             let photoHtml = '';
             if (establishment.photo_urls && Array.isArray(establishment.photo_urls) && establishment.photo_urls.length > 0) {
-                const photoUrl = establishment.photo_urls[0];
+                const photoUrl = `/establishment-photo/${establishment.id}/0`;
                 photoHtml = `<img src="${photoUrl}" alt="${establishment.name}" class="h-16 w-16 flex-shrink-0 rounded-lg object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />`;
             }
             
@@ -1263,7 +1281,28 @@
 </script>
 
 @if(config('services.google.maps_api_key'))
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initMap"></script>
+<script>
+    // Error handler para capturar erros do Google Maps API
+    window.gm_authFailure = function() {
+        console.error('❌ Erro de autenticação do Google Maps. Verifique se a chave da API está correta e tem as permissões necessárias.');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg';
+        errorDiv.innerHTML = '<strong>Erro ao carregar o mapa:</strong> Chave da API do Google Maps inválida ou sem permissões. Verifique o console do navegador para mais detalhes.';
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 10000);
+    };
+
+    // Verificar se o Google Maps foi carregado corretamente
+    window.addEventListener('error', function(e) {
+        if (e.message && e.message.includes('google')) {
+            console.error('❌ Erro ao carregar Google Maps:', e);
+        }
+    }, true);
+
+    // Log quando o script começar a carregar
+    console.log('📍 Carregando Google Maps API com chave:', '{{ substr(config('services.google.maps_api_key'), 0, 20) }}...');
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initMap&libraries=places"></script>
 @else
 <div class="bg-red-50 px-6 py-4 text-red-700">
     Chave da API do Google Maps não configurada. Por favor, revise as variáveis de ambiente.

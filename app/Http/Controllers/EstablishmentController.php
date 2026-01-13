@@ -10,6 +10,7 @@ use App\Jobs\ProcessEstablishmentJob;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class EstablishmentController extends Controller
 {
@@ -229,7 +230,7 @@ class EstablishmentController extends Controller
     }
 
     /**
-     * Proxy para servir imagens da Google Places API
+     * Proxy para servir imagens da Google Places API com cache no MinIO
      */
     public function proxyPhoto($id, $index = 0)
     {
@@ -245,7 +246,30 @@ class EstablishmentController extends Controller
             $index = 0;
         }
         
+        // Gerar path único para cache no MinIO
+        $cachePath = "establishments/{$id}/photos/photo_{$index}.jpg";
+        $cacheDisk = 'minio';
+        
         try {
+            // Verificar se a imagem já existe no cache (MinIO)
+            if (Storage::disk($cacheDisk)->exists($cachePath)) {
+                Log::info('Photo found in cache', [
+                    'id' => $id,
+                    'index' => $index,
+                    'path' => $cachePath
+                ]);
+                
+                $imageData = Storage::disk($cacheDisk)->get($cachePath);
+                
+                return response($imageData, 200)
+                    ->header('Content-Type', 'image/jpeg')
+                    ->header('Cache-Control', 'public, max-age=31536000') // 1 ano (cache permanente)
+                    ->header('Content-Length', strlen($imageData))
+                    ->header('X-Content-Type-Options', 'nosniff')
+                    ->header('X-Cache', 'HIT');
+            }
+            
+            // Cache miss - buscar da API do Google
             $photoUrl = $establishment->photo_urls[$index];
             
             if (empty($photoUrl)) {
@@ -253,7 +277,7 @@ class EstablishmentController extends Controller
                 return $this->getPlaceholderImage();
             }
             
-            Log::info('Fetching photo', [
+            Log::info('Fetching photo from Google API (cache miss)', [
                 'id' => $id,
                 'index' => $index,
                 'url' => substr($photoUrl, 0, 100) . '...'
@@ -290,23 +314,43 @@ class EstablishmentController extends Controller
                     return $this->getPlaceholderImage();
                 }
                 
-                Log::info('Photo fetched successfully', [
+                // Salvar no MinIO (cache)
+                try {
+                    Storage::disk($cacheDisk)->put($cachePath, $imageData, 'public');
+                    Log::info('Photo cached successfully in MinIO', [
+                        'id' => $id,
+                        'index' => $index,
+                        'path' => $cachePath,
+                        'size' => strlen($imageData)
+                    ]);
+                } catch (\Exception $cacheException) {
+                    Log::warning('Failed to cache photo in MinIO (continuing without cache)', [
+                        'id' => $id,
+                        'index' => $index,
+                        'error' => $cacheException->getMessage()
+                    ]);
+                    // Continuar mesmo se falhar o cache
+                }
+                
+                Log::info('Photo fetched successfully from Google API', [
                     'id' => $id,
                     'index' => $index,
                     'size' => strlen($imageData),
                     'content_type' => $contentType,
                     'image_width' => $imageInfo[0] ?? null,
-                    'image_height' => $imageInfo[1] ?? null
+                    'image_height' => $imageInfo[1] ?? null,
+                    'cached' => true
                 ]);
                 
                 return response($imageData, 200)
                     ->header('Content-Type', $contentType)
                     ->header('Cache-Control', 'public, max-age=3600')
                     ->header('Content-Length', strlen($imageData))
-                    ->header('X-Content-Type-Options', 'nosniff');
+                    ->header('X-Content-Type-Options', 'nosniff')
+                    ->header('X-Cache', 'MISS');
             }
             
-            Log::warning('Failed to fetch photo', [
+            Log::warning('Failed to fetch photo from Google API', [
                 'id' => $id,
                 'index' => $index,
                 'status' => $response->status()

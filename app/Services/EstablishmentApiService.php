@@ -331,6 +331,9 @@ class EstablishmentApiService
             $details = $this->getPlaceDetails($establishment->external_id);
             
             if ($details) {
+                // Convert photo references to URLs
+                $photoUrls = $this->convertPhotoReferencesToUrls($details['photos'] ?? []);
+                
                 $updatedData = [
                     'rating' => $details['rating'] ?? $establishment->rating,
                     'user_ratings_total' => $details['user_ratings_total'] ?? $establishment->user_ratings_total,
@@ -341,6 +344,7 @@ class EstablishmentApiService
                     'website' => $details['website'] ?? $establishment->website,
                     'opening_hours_external' => $details['opening_hours'] ?? $establishment->opening_hours_external,
                     'photos' => $details['photos'] ?? $establishment->photos,
+                    'photo_urls' => $photoUrls,
                     'reviews_external' => $details['reviews'] ?? $establishment->reviews_external,
                     'last_synced_at' => now(),
                 ];

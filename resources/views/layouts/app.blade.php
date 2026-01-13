@@ -276,10 +276,6 @@
                                 </form>
                             </div>
                         @else
-                            <a href="{{ route('register') }}" class="bg-churrasco-500 hover:bg-churrasco-600 text-white px-3 sm:px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
-                                <span class="hidden sm:inline">Cadastrar estabelecimento</span>
-                                <span class="sm:hidden">Cadastrar</span>
-                            </a>
                             <a href="{{ route('login') }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 sm:px-4 lg:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors duration-200 whitespace-nowrap">
                                 Entrar
                             </a>
@@ -390,9 +386,6 @@
                         </div>
                     @else
                         <div class="border-t border-gray-200 pt-4 pb-3 space-y-2">
-                            <a href="{{ route('register') }}" class="block w-full text-center bg-churrasco-500 hover:bg-churrasco-600 text-white px-4 py-2 rounded-lg text-base font-semibold transition-colors duration-200">
-                                Cadastrar estabelecimento
-                            </a>
                             <a href="{{ route('login') }}" class="block w-full text-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-base font-semibold transition-colors duration-200">
                                 Entrar
                             </a>

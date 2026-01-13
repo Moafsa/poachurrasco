@@ -402,18 +402,20 @@
                     <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
                         <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                             @php
-                                $photo = $establishment->photo_urls[0] ?? null;
+                                $hasPhotos = !empty($establishment->photo_urls) && is_array($establishment->photo_urls) && count($establishment->photo_urls) > 0;
+                                $photoUrl = $hasPhotos ? route('establishment.photo.proxy', ['id' => $establishment->id, 'index' => 0]) : null;
                             @endphp
-                            @if ($photo)
+                            @if ($photoUrl)
                                 <img
-                                    src="{{ $photo }}"
+                                    src="{{ $photoUrl }}"
                                     alt="{{ $establishment->name }}"
                                     class="h-full w-full object-cover"
                                     loading="lazy"
+                                    onerror="this.onerror=null; this.style.display='none'; const fallback = this.nextElementSibling; if (fallback) fallback.style.display='flex';"
+                                    onload="this.style.display='block';"
                                 >
-                            @else
-                                <div class="flex h-full w-full items-center justify-center text-5xl">🥩</div>
                             @endif
+                            <div class="flex h-full w-full items-center justify-center text-5xl bg-gradient-to-br from-orange-100 to-red-100" style="display: {{ $photoUrl ? 'none' : 'flex' }};">🥩</div>
                             <div class="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-orange-600 z-10">
                                 {{ ucfirst($establishment->category ?? 'churrasco') }}
                             </div>
@@ -802,18 +804,20 @@
 
                                 <div class="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                                     @php
-                                        $photo = $establishment->photo_urls[0] ?? null;
+                                        $hasPhotos = !empty($establishment->photo_urls) && is_array($establishment->photo_urls) && count($establishment->photo_urls) > 0;
+                                        $photoUrl = $hasPhotos ? route('establishment.photo.proxy', ['id' => $establishment->id, 'index' => 0]) : null;
                                     @endphp
-                                    @if ($photo)
+                                    @if ($photoUrl)
                                         <img
-                                            src="{{ $photo }}"
+                                            src="{{ $photoUrl }}"
                                             alt="{{ $establishment->name }}"
                                             class="h-full w-full object-cover"
                                             loading="lazy"
+                                            onerror="this.onerror=null; this.style.display='none'; const fallback = this.nextElementSibling; if (fallback) fallback.style.display='flex';"
+                                            onload="this.style.display='block';"
                                         >
-                                    @else
-                                        <div class="flex h-full w-full items-center justify-center text-5xl">🥩</div>
                                     @endif
+                                    <div class="flex h-full w-full items-center justify-center text-5xl bg-gradient-to-br from-orange-100 to-red-100" style="display: {{ $photoUrl ? 'none' : 'flex' }};">🥩</div>
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                                     <div class="absolute bottom-4 left-4 right-4">
                                         <div class="inline-flex items-center gap-2 rounded-full bg-orange-500/90 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-white">
